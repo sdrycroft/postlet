@@ -15,13 +15,15 @@ public class Upload extends Thread
     String [] filenames;
     Main main;
     int [] fileSize;
+    URL destination;
     
     /** Creates a new instance of Upload */
-    public Upload(String [] f, int[] fs, Main m)
+    public Upload(String [] f, int[] fs, Main m, URL u)
     {
         filenames = f;
         main = m;
         fileSize = fs;
+        destination = u;
     }
     
     public void run()

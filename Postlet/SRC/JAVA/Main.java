@@ -6,6 +6,8 @@ import javax.swing.table.*;
 import java.io.*;
 import java.awt.event.*;
 import javax.swing.event.*;
+import java.net.*;
+import javax.swing.JDialog;
 
 public class Main extends javax.swing.JApplet implements MouseListener
 {    
@@ -26,73 +28,76 @@ public class Main extends javax.swing.JApplet implements MouseListener
     int fileSize[];
     int totalBytes;
     Font font;
+    URL destination;
     
     public void init()
     {       
+        // Set the look of the applet to be the same as the system standard
+        // of the computer that the applet is running on.
         try 
         {
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         catch (UnsupportedLookAndFeelException exc){;}
         catch (IllegalAccessException exc){;}
         catch (ClassNotFoundException exc){;}
         catch (InstantiationException exc){;}
         
-        blue = new Color(0,111,221);
-        Font font = new Font("Arial",Font.BOLD, 12);
-        Container pane = getContentPane();
-        pane.setBackground(Color.white);
+        // Get the destination which is set by a parameter.
+        try {
+            destination = new URL(getParameter("destination"));
+        }
+        catch(java.net.MalformedURLException malurlex){
+            // Do something here for badly formed destination, which is ESENTIAL.
+            JOptionPane message = new JOptionPane();
+            JOptionPane.showMessageDialog(null, "The destination URL provided is not a valid one.","Postlet error.", JOptionPane.ERROR_MESSAGE);
+            destination = null;
+        }
+        catch(java.lang.NullPointerException npe){
+            // Do something here for the missing destination, which is ESENTIAL.
+            JOptionPane message = new JOptionPane();
+            JOptionPane.showMessageDialog(null, "You have not provided a destination URL.", "Postlet error.", JOptionPane.ERROR_MESSAGE);
+            destination = null;
+        }
         
+        // Get the main pane to add content to.
+        Container pane = getContentPane();
+        
+        // Table for the adding of Filenames and sizes to.
         tabledata = new TableData();
-        table = new JTable(tabledata);
-        table.setBackground(Color.white);
-        table.getTableHeader().setBackground(blue);
-        table.getTableHeader().setForeground(Color.white);
-        table.getTableHeader().setFont(font);
+        table = new JTable(tabledata);       
         table.setColumnSelectionAllowed(false);
         table.setDragEnabled(false);
         table.getColumn("Filename").setMinWidth(300);
         scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-        scrollPane.setBackground(Color.white);
                 
+        // Add the scroll pane/table to the main pane
         pane.add(scrollPane, BorderLayout.CENTER);
         
         rightPanel = new JPanel(new GridLayout(4,1,10,10));
-        rightPanel.setBackground(Color.white);
         rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         
         add = new JButton("Add");
-        add.setForeground(Color.white);
-        add.setBackground(blue);
         add.addMouseListener(this);
         rightPanel.add(add);
         
         remove = new JButton("Remove");
-        remove.setForeground(Color.white);
-        remove.setBackground(blue);
         remove.addMouseListener(this);
         rightPanel.add(remove);
         
         upload = new JButton("Upload");
-        upload.setBackground(blue);
-        upload.setForeground(Color.white);
         upload.addMouseListener(this);
         rightPanel.add(upload);
         pane.add(rightPanel,"East");   
         
         JPanel progPanel = new JPanel(new GridLayout(1, 3));
-        progPanel.setBackground(Color.white);
         progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         
         JLabel progCompletion = new JLabel("Upload progress: ",SwingConstants.RIGHT);
-        progCompletion.setFont(font);
-        progCompletion.setForeground(blue);
         progPanel.add(progCompletion);
         
         progBar = new JProgressBar();
-        progBar.setBackground(Color.white);
-        progBar.setForeground(Color.BLACK);
         progPanel.add(progBar);
         
         progressLabel = new JLabel("",SwingConstants.CENTER);
@@ -101,6 +106,15 @@ public class Main extends javax.swing.JApplet implements MouseListener
         progPanel.add(progressLabel);
         
         pane.add(progPanel,"South");
+        
+        // If the destination has not been set/isn't a proper URL
+        // Then deactivate the buttons.
+        if (destination == null)
+        {
+            remove.setEnabled(false);
+            add.setEnabled(false);
+            upload.setEnabled(false);
+        }
     }
     
     public void removeClick()
@@ -132,7 +146,7 @@ public class Main extends javax.swing.JApplet implements MouseListener
             sentBytes = 0;
             progBar.setMaximum(totalBytes);
             progBar.setMinimum(0);
-            Upload u = new Upload(filenames, fileSize, this);
+            Upload u = new Upload(filenames, fileSize, this, destination);
             u.start();       
         }
     }
@@ -210,14 +224,14 @@ public class Main extends javax.swing.JApplet implements MouseListener
         f.add("Center", main);
         f.pack();
         f.setSize(600,200);
-        f.show();
+        f.setVisible(true);
     }
     
     public void mouseClicked(MouseEvent e) 
     {
-        if(e.getSource()==add)      {addClick();}
-        if(e.getSource()==upload)   {uploadClick();}
-        if(e.getSource()==remove)   {removeClick();}
+        if(e.getSource()==add && add.isEnabled())           {addClick();}
+        if(e.getSource()==upload && upload.isEnabled())     {uploadClick();}
+        if(e.getSource()==remove && remove.isEnabled())     {removeClick();}
     }
     
     public void mouseEntered(MouseEvent e){;}
