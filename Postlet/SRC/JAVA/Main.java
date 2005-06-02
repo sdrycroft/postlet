@@ -8,8 +8,11 @@ import java.awt.event.*;
 import javax.swing.event.*;
 import java.net.*;
 import javax.swing.JDialog;
+import java.lang.*;
+import javax.swing.JApplet;
 
-public class Main extends javax.swing.JApplet implements MouseListener
+
+public class Main extends JApplet implements MouseListener
 {    
     JScrollPane scrollPane;
     JTable table;
@@ -21,7 +24,6 @@ public class Main extends javax.swing.JApplet implements MouseListener
     TableData tabledata;
     FileUploader fu;
     File [] file;
-    Color blue;
     JLabel progressLabel;
     JProgressBar progBar;
     int sentBytes;
@@ -29,6 +31,7 @@ public class Main extends javax.swing.JApplet implements MouseListener
     int totalBytes;
     Font font;
     URL destination;
+    Color backgroundColor, columnHeadColour;
     
     public void init()
     {       
@@ -46,6 +49,7 @@ public class Main extends javax.swing.JApplet implements MouseListener
         // Get the destination which is set by a parameter.
         try {
             destination = new URL(getParameter("destination"));
+            System.out.println("Destination has been set to:"+destination);
         }
         catch(java.net.MalformedURLException malurlex){
             // Do something here for badly formed destination, which is ESENTIAL.
@@ -60,6 +64,44 @@ public class Main extends javax.swing.JApplet implements MouseListener
             destination = null;
         }
         
+        try {
+            // Set the background color, which is set by a parameter.
+            Integer redInteger = new Integer(getParameter("red"));
+            int red = redInteger.intValue();
+            Integer greenInteger = new Integer(getParameter("green"));
+            int green = greenInteger.intValue();
+            Integer blueInteger = new Integer(getParameter("blue"));
+            int blue = blueInteger.intValue();
+            backgroundColor = new Color(red, green, blue);
+            System.out.println("Background colour has been set to:"+red+"/"+green+"/"+blue);
+            blueInteger= null;
+            greenInteger = null;            
+            
+            redInteger = new Integer(getParameter("redheader"));
+            int redheader = redInteger.intValue();
+            greenInteger = new Integer(getParameter("greenheader"));
+            int greenheader = greenInteger.intValue();
+            blueInteger = new Integer(getParameter("blueheader"));
+            int blueheader = blueInteger.intValue();
+            columnHeadColour = new Color(redheader, greenheader, blueheader);
+            System.out.println("Background colour has been set to:"+redheader+"/"+greenheader+"/"+blueheader);
+            redInteger = null;
+            blueInteger= null;
+            greenInteger = null;
+        }
+        catch(java.lang.NullPointerException npered){
+            // Color isn't set.
+            // Just ignore this, and set the background color to the 
+            // default one.
+            backgroundColor = null;
+        }
+        catch(java.lang.NumberFormatException numfe){
+            // Color isn't set.
+            // Just ignore this, and set the background color to the 
+            // default one.
+            backgroundColor = null;
+        }
+                
         // Get the main pane to add content to.
         Container pane = getContentPane();
         
@@ -69,6 +111,8 @@ public class Main extends javax.swing.JApplet implements MouseListener
         table.setColumnSelectionAllowed(false);
         table.setDragEnabled(false);
         table.getColumn("Filename").setMinWidth(300);
+        table.getTableHeader().setBackground(columnHeadColour);
+        table.getTableHeader().setForeground(Color.RED);
         scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
                 
@@ -102,8 +146,17 @@ public class Main extends javax.swing.JApplet implements MouseListener
         
         progressLabel = new JLabel("",SwingConstants.CENTER);
         progressLabel.setFont(font);
-        progressLabel.setForeground(blue);
+        //progressLabel.setForeground(blue);
         progPanel.add(progressLabel);
+        
+        
+        if (backgroundColor != null){
+            pane.setBackground(backgroundColor);
+            rightPanel.setBackground(backgroundColor);
+            scrollPane.setBackground(backgroundColor);
+            progPanel.setBackground(backgroundColor);
+            scrollPane.getViewport().setBackground(backgroundColor);
+        }
         
         pane.add(progPanel,"South");
         
@@ -214,6 +267,8 @@ public class Main extends javax.swing.JApplet implements MouseListener
         }        
     }
     
+
+    // Here for testing purposes
     public static void main(String args[]) 
     {      
         Frame f = new Frame("Uploader");
@@ -225,7 +280,8 @@ public class Main extends javax.swing.JApplet implements MouseListener
         f.pack();
         f.setSize(600,200);
         f.setVisible(true);
-    }
+    }    
+
     
     public void mouseClicked(MouseEvent e) 
     {
