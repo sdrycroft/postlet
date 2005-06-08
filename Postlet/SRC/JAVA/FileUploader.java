@@ -33,7 +33,7 @@ public class FileUploader
         DataOutputStream outStream;
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
-        int maxBufferSize = 1024*1024*1024;
+        int maxBufferSize = 1024;
         
         try 
         {
@@ -44,19 +44,16 @@ public class FileUploader
             outStream.writeBytes(lineEnd);
             
             bytesAvailable = fileInputStream.available();
-            bufferSize = Math.min(bytesAvailable,maxBufferSize);
             
-            buffer = new byte[bufferSize];
-            
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-            while (bytesRead > 0) 
-            {
-               outStream.write(buffer, 0, bufferSize);
-               bytesAvailable = fileInputStream.available();
-               bufferSize = Math.min(bytesAvailable,maxBufferSize);
-               
-               bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            int byteRead=1;
+            while(byteRead != -1)
+            {       
+                byteRead = fileInputStream.read();
+                outStream.write(byteRead);  
+                outStream.flush();              
             }
+            
+            outStream.flush();
             fileInputStream.close();
             outStream.writeBytes(lineEnd);
                         
