@@ -21,18 +21,26 @@ public class UploadThread extends Thread
    {      
       FileUploader f = new FileUploader(scriptURL);
       f.uploadFile(filename);
-      main.setProgress(fileSize);
-      System.out.println("***"+f.getPOSTRequestResponse()+"***");
-      if (f.getPOSTRequestResponse().indexOf("File is valid inserting data")>0)
+      String response = f.getPOSTRequestResponse();
+      System.out.println("***"+response+"***");
+      if (response.indexOf("NO")>=0)
       {
-          try{
-              sleep(1000);}
-          catch(InterruptedException ie){System.out.println("### exception");}
-          if (i<5)
-          {
-              i++;
-              run();
+          if (response.indexOf("[error] => 1")<0){
+              try{
+                  sleep(1000);}
+              catch(InterruptedException ie){System.out.println("### exception");}
+              if (i<5)
+              {
+                  System.out.println("Error, retrying file \""+filename+"\"");
+                  i++;
+                  run();
+              }
           }
-      }              
+          else {
+              System.out.println("The file is too large");
+              i = 5;
+          }
+      }          
+      main.setProgress(fileSize);    
    }
 }

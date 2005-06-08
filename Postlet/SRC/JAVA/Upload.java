@@ -15,15 +15,15 @@ public class Upload extends Thread
     String [] filenames;
     Main main;
     int [] fileSize;
-    URL destination;
+    String destination;
     
     /** Creates a new instance of Upload */
-    public Upload(String [] f, int[] fs, Main m, URL u)
+    public Upload(String [] f, int[] fs, Main m, String d)
     {
         filenames = f;
         main = m;
         fileSize = fs;
-        destination = u;
+        destination = d;
     }
     
     public void run()
@@ -38,8 +38,7 @@ public class Upload extends Thread
                 {
                     InetAddress myAdr = InetAddress.getLocalHost();
                     String thisComp = myAdr.getHostAddress();
-                    String uploadDest = "http://130.209.46.59/image_database/upload/upload_php_files/"+thisComp+".php";
-                    u[i+j] = new UploadThread(uploadDest,filenames[i+j], fileSize[i+j], main);
+                    u[i+j] = new UploadThread(destination,filenames[i+j], fileSize[i+j], main);
                     u[i+j].start();
                     try{
                         u[i+j].sleep(1000);}
