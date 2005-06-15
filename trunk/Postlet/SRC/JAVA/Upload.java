@@ -49,7 +49,6 @@ public class Upload extends Thread {
             u.start();
             // Wait for thread to finish
             while(u.isAlive()){;}
-            System.out.println("HERE!");
             System.gc();
         }
     }

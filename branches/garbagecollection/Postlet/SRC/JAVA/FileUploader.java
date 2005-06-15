@@ -7,8 +7,10 @@ public class FileUploader {
     private static String boundary="leedsunitedarethebestteaminthepremierleagueHoHum1966andallthat";
     private static String twoHyphens="--";
     private static String lineEnd="\r\n";
+    private static Main main;
     
-    public FileUploader(String phpScript) {
+    public FileUploader(String phpScript, Main m) {
+        main = m;
         httpURLConn = null;
         try {
             URL theURL = new URL(phpScript);
@@ -27,7 +29,7 @@ public class FileUploader {
         DataOutputStream outStream;
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
-        int maxBufferSize = 1024*1024*1024;
+        int maxBufferSize = 1024;
         
         try {
             outStream = new DataOutputStream(httpURLConn.getOutputStream());
@@ -44,6 +46,7 @@ public class FileUploader {
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
             while (bytesRead > 0) {
                 //System.gc();
+                main.setProgress(bytesRead);
                 outStream.write(buffer, 0, bufferSize);
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable,maxBufferSize);
