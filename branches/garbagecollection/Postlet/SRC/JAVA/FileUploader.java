@@ -51,6 +51,7 @@ public class FileUploader
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
             while (bytesRead > 0) 
             {
+                System.gc();
                outStream.write(buffer, 0, bufferSize);
                bytesAvailable = fileInputStream.available();
                bufferSize = Math.min(bytesAvailable,maxBufferSize);
