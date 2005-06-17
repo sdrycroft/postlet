@@ -15,6 +15,7 @@ public class FileUploader {
         try {
             URL theURL = new URL(phpScript);
             httpURLConn  = (HttpURLConnection)theURL.openConnection();
+            theURL = null;
             httpURLConn.setRequestMethod("POST");
             httpURLConn.setRequestProperty("Connection", "Keep-Alive");
             httpURLConn.setDoOutput(true);
@@ -29,7 +30,7 @@ public class FileUploader {
         DataOutputStream outStream;
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
-        int maxBufferSize = 1024;
+        int maxBufferSize = 1024*1024;
         
         try {
             outStream = new DataOutputStream(httpURLConn.getOutputStream());
@@ -44,8 +45,19 @@ public class FileUploader {
             buffer = new byte[bufferSize];
             
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            int i=0;
             while (bytesRead > 0) {
+                // The following line is TOO SLOW to be placed here,
+                // I'll have to handle memory problems elsewhere.
                 //System.gc();
+                // Garbage collect every 5 reads (This may need tuning, and is
+                // at the moment, just guess work)
+                if (i == 5){
+                    System.gc();
+                    i=0;
+                }
+                else
+                    i++;
                 main.setProgress(bytesRead);
                 outStream.write(buffer, 0, bufferSize);
                 bytesAvailable = fileInputStream.available();
