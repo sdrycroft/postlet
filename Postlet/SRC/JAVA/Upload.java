@@ -45,11 +45,17 @@ public class Upload extends Thread {
         }
          */
         for(int i=0; i<filenames.length; i++) {
-            UploadThread u = new UploadThread(destination,filenames[i], fileSize[i], main);
-            u.start();
-            // Wait for thread to finish
-            while(u.isAlive()){;}
-            System.gc();
+            try {
+                UploadThread u = new UploadThread(destination,filenames[i], fileSize[i], main);
+                u.start();
+                // Wait for thread to finish
+                while(u.isAlive()){;}
+                u = null;
+                System.gc();
+            }
+            catch (java.lang.OutOfMemoryError memerr){
+                System.out.println("Out of memory!");
+            }
         }
     }
 }
