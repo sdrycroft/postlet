@@ -47,9 +47,7 @@ public class Upload extends Thread {
         for(int i=0; i<filenames.length; i++) {
             try {
                 UploadThread u = new UploadThread(destination,filenames[i], fileSize[i], main);
-                u.start();
-                // Wait for thread to finish
-                while(u.isAlive()){;}
+                u.upload();
                 u = null;
                 System.gc();
             }
@@ -58,4 +56,5 @@ public class Upload extends Thread {
             }
         }
     }
+    
 }
