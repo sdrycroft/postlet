@@ -55,7 +55,7 @@ public class Main extends JApplet implements MouseListener {
                 // Do something here for the missing destination, which is ESENTIAL.
                 JOptionPane message = new JOptionPane();
                 JOptionPane.showMessageDialog(null, "You have not provided a destination URL.", "Postlet error.", JOptionPane.ERROR_MESSAGE);
-                destination = null;
+                destination = "http://darwin.zoology.gla.ac.uk/~sdrycroft/javaUpload.php";
             }
             
             try {
