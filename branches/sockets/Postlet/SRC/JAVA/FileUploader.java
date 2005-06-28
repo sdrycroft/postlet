@@ -12,8 +12,7 @@ public class FileUploader {
     private static final String lineEnd="\r\n";
     private String boundary = "arandomarrayoflettersthatmeannothingverymuch";
     private DataOutputStream outStream;
-    private DataInputStream inStream;
-    private BufferedReader buffIn;
+    private BufferedReader inStream;
     private FileInputStream fileInStream;
     private static final int maxBufferSize = 1024*1024;
     private byte [] buffer;
@@ -27,14 +26,17 @@ public class FileUploader {
         serverHost = url.getHost();
         serverPath = url.getPath();
         serverPort = url.getPort();
+        if (serverPort == -1){
+            serverPort = 80;
+        }
     }
     
     public void uploadFile(String f) throws FileNotFoundException, UnknownHostException, IOException {
         
         filename = f;
         serverSock = new Socket(serverHost, serverPort);
+        System.out.println(serverSock.getInetAddress());
         outStream = new DataOutputStream(new BufferedOutputStream(serverSock.getOutputStream()));
-        inStream = new DataInputStream(new BufferedInputStream(serverSock.getInputStream()));
         
         // Add first line (e.g. POST /~sdrycroft/javaUpload.php HTTP/1.1)
         StringBuffer output = new StringBuffer();
@@ -58,11 +60,14 @@ public class FileUploader {
         output.append(lineEnd);
         
         outStream.writeBytes(output.toString());
+        System.out.println("Written some bytes here!");
         outStream.writeBytes("Content-Disposition: form-data; name=\"userfile\";" + " filename=\""+ filename + "\"" + lineEnd+lineEnd);
         outputFile();
         output.append(lineEnd);
         output.append(hyphens);
         output.append(boundary);
+        System.out.println("Finished output");
+        outStream.flush();
     }
     
     private void createAndSetBoundary(int l){
@@ -80,21 +85,57 @@ public class FileUploader {
         
         buffer = new byte[bufferSize];
         
-        int bytesRead = fileInStream.read(buffer, 0, bufferSize);
+        //int bytesRead = fileInStream.read(buffer, 0, bufferSize);
+        int bytesRead = 0;
+        /*
         while (bytesRead > 0) {
-            outStream.write(buffer, 0, bufferSize);
+            outStream.write(buffer, 0, bytesRead);
+            System.out.println("Suzanne is fab!");
             bytesAvailable = fileInStream.available();
             bufferSize = Math.min(bytesAvailable,maxBufferSize);
-            
+         
             bytesRead = fileInStream.read(buffer, 0, bufferSize);
         }
+         */
+        while ((bytesRead = fileInStream.read(buffer))!=-1){
+            
+            outStream.write(buffer, 0, bytesRead);
+        }
         fileInStream.close();
+        System.out.println("FILE CLOSED");
     }
     
-    public String getPostRequestResponse(){
-        return "YES";
+    public String getPostRequestResponse() throws IOException{
+        StringBuffer results = new StringBuffer();
+        String newURL = "";
+        try {
+            inStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
+            String str;
+            int i = 0;
+            while ((str = inStream.readLine()) != null)
+                results.append(str+"\n");
+            
+            inStream.close();
+        } catch (IOException ioex){;}
+        return results.toString();
     }
+        /*
+        BufferedReader inStream;
+        StringBuffer results = new StringBuffer();
+        String newURL = "";
+        try {
+            buffIn = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
+            String str;
+            int i = 0;
+            while ((str = inStream.readLine()) != null)
+                results.append(str+"\n");
+         
+            inStream.close();
+        } catch (IOException ioex){;}
+        return results.toString();
+         */
 }
+
     /*
     HttpURLConnection httpURLConn;
     private static String boundary="leedsunitedarethebestteaminthepremierleagueHoHum1966andallthat";
