@@ -17,8 +17,9 @@ public class UploadThread {
     }
     
     public void upload() {
+        FileUploader f = null;
         try {
-            FileUploader f = new FileUploader(scriptURL, main);
+            f = new FileUploader(scriptURL, main);
             f.uploadFile(filename);
             String response = f.getPostRequestResponse();
             System.out.println("***"+response+"***");
@@ -35,6 +36,23 @@ public class UploadThread {
                     i = 5;
                 }
             }
-        } catch (java.io.FileNotFoundException fnfe){;} catch (java.net.MalformedURLException mue){;} catch (java.net.UnknownHostException uhe){;} catch (java.io.IOException ioee){;}
+        } catch (java.io.FileNotFoundException fnfe){
+            System.err.println("FileNotFoundException");
+            System.err.println(fnfe.getMessage());
+        } catch (java.net.MalformedURLException mue){
+            System.err.println("MalformedURLException");
+            System.err.println(mue.getMessage());
+        } catch (java.net.UnknownHostException uhe){
+            System.err.println("UnknownHostException");
+            System.err.println(uhe.getMessage());
+        } catch (java.io.IOException ioee){
+            try {
+                System.err.println("IOException");
+                System.err.println(ioee.toString());
+                System.err.println(ioee.getStackTrace().toString());
+                String response = f.getPostRequestResponse();
+                System.out.println("***"+response+"***");
+            } catch (java.io.IOException ioexc){;}
+        }
     }
 }
