@@ -107,7 +107,7 @@ public class Main extends JApplet implements MouseListener {
             tabledata = new TableData();
             table = new JTable(tabledata);
             table.setColumnSelectionAllowed(false);
-            table.setDragEnabled(false);
+            //table.setDragEnabled(false);
             table.getColumn("Filename").setMinWidth(300);
             if (columnHeadColour != null){
                 table.getTableHeader().setBackground(columnHeadColour);
@@ -164,7 +164,7 @@ public class Main extends JApplet implements MouseListener {
                 progPanel.setBackground(backgroundColour);
                 // Always set the table background colour as White.
                 // May change this if required, only would require alot of Params!
-                scrollPane.getViewport().setBackground(Color.WHITE);
+                scrollPane.getViewport().setBackground(Color.white);
             }
             
             pane.add(progPanel,"South");
