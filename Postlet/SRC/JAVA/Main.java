@@ -31,7 +31,7 @@ public class Main extends JApplet implements MouseListener {
     Font font;
     String destination;
     URL endpage, helppage;
-    Color backgroundColour, columnHeadColour;
+    Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     
     public void init() {
         try {
@@ -74,14 +74,22 @@ public class Main extends JApplet implements MouseListener {
                 greenInteger = null;
                 
                 // Set the background colour of the table headers.
+                redInteger = new Integer(getParameter("redheaderback"));
+                int redheaderback = redInteger.intValue();
+                greenInteger = new Integer(getParameter("greenheaderback"));
+                int greenheaderback = greenInteger.intValue();
+                blueInteger = new Integer(getParameter("blueheaderback"));
+                int blueheaderback = blueInteger.intValue();
+                columnHeadColourBack = new Color(redheaderback, greenheaderback, blueheaderback);
+                
+                // Set the foreground colour of the table headers.
                 redInteger = new Integer(getParameter("redheader"));
                 int redheader = redInteger.intValue();
                 greenInteger = new Integer(getParameter("greenheader"));
                 int greenheader = greenInteger.intValue();
                 blueInteger = new Integer(getParameter("blueheader"));
                 int blueheader = blueInteger.intValue();
-                columnHeadColour = new Color(redheader, greenheader, blueheader);
-                System.out.println("Background colour has been set to:"+redheader+"/"+greenheader+"/"+blueheader);
+                columnHeadColourFore = new Color(redheader, greenheader, blueheader);
                 // Try and dispose of all variables when finished with (memory is essential).
                 redInteger = null;
                 blueInteger= null;
@@ -91,13 +99,15 @@ public class Main extends JApplet implements MouseListener {
                 // Just ignore this, and set the background color to the
                 // default one.
                 backgroundColour = null;
-                columnHeadColour = null;
+                columnHeadColourFore = null;
+                columnHeadColourBack = null;
             } catch(java.lang.NumberFormatException numfe){
                 // Color isn't set.
                 // Just ignore this, and set the background color to the
                 // default one.
                 backgroundColour = null;
-                columnHeadColour = null;
+                columnHeadColourFore = null;
+                columnHeadColourBack = null;
             }
             
             // Get the main pane to add content to.
@@ -109,10 +119,11 @@ public class Main extends JApplet implements MouseListener {
             table.setColumnSelectionAllowed(false);
             //table.setDragEnabled(false);
             table.getColumn("Filename").setMinWidth(300);
-            if (columnHeadColour != null){
-                table.getTableHeader().setBackground(columnHeadColour);
-                table.setBackground(columnHeadColour);
-                table.getTableHeader().setForeground(columnHeadColour);
+            if (columnHeadColourBack != null && backgroundColour != null){
+                table.getTableHeader().setBackground(columnHeadColourBack);
+                table.getTableHeader().setForeground(columnHeadColourFore);
+                table.setBackground(backgroundColour);
+                //table.getTableHeader().setForeground(columnHeadColour);
             }
             scrollPane = new JScrollPane(table);
             scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
