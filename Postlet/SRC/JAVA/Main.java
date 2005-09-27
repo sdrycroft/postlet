@@ -81,6 +81,9 @@ public class Main extends JApplet implements MouseListener {
                 blueInteger = new Integer(getParameter("blueheaderback"));
                 int blueheaderback = blueInteger.intValue();
                 columnHeadColourBack = new Color(redheaderback, greenheaderback, blueheaderback);
+                redInteger = null;
+                blueInteger= null;
+                greenInteger = null;
                 
                 // Set the foreground colour of the table headers.
                 redInteger = new Integer(getParameter("redheader"));
