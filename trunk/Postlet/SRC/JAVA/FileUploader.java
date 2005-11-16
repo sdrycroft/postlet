@@ -18,7 +18,7 @@ import java.io.FileNotFoundException;
 public class FileUploader {
     private static String lotsHyphens="---------------------------";
     private static String lineEnd="\n";
-    private String header, footer;
+    private String header, footer, request;
     private File file;
     private URL url;
     private String boundary ="kjaslfkajsdhfnassfioausycntiasuhcn";
@@ -43,6 +43,7 @@ public class FileUploader {
             DataOutputStream output = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
             BufferedReader input = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             
+            output.writeBytes(request);
             output.writeBytes(header);
             
             byte [] byteBuff = new byte[1024];
@@ -53,6 +54,7 @@ public class FileUploader {
                 throw new IOException("File is too large for upload");
             }
             
+            // Following reads the file, and streams it.
             /////////////////////////////////////////////////////////////     
             int maxBufferSize = 1024;
             int bytesAvailable = fileStream.available();
@@ -77,25 +79,23 @@ public class FileUploader {
             // Seems to be a bug in the way that java (or Apache), or more likely
             // I handle the file sizes and thus the content-length (which is always
             // too high).  Thus, send blanks till the apache server finishes
-            // listening for input.
-            
+            // listening for input.            
             // Shouldn't need more than 1KB
-            for (int i = 0; i<1024; i++){
+            /*
+             for (int i = 0; i<1024; i++){
                 output.write(0);
             }
+             */
             
             output.flush();
             //output.close();
             
             StringBuffer replyString = new StringBuffer();
             
-            System.out.println("Starting reading of output");
             String line = "";
             while ((line = input.readLine())!=null){
-                System.out.println("Reading output");
                 replyString.append(line+lineEnd);
             }
-            System.out.println("Finished reading output");
             //output.close();
             input.close();
             output.close();
@@ -132,17 +132,18 @@ public class FileUploader {
         
         header = new String();
         footer = new String();
+        request = new String();
         
-        String afterContentLength = lotsHyphens +"--"+ boundary + lineEnd +
+        String afterContent = lotsHyphens +"--"+ boundary + lineEnd +
                                     "Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName()+"\""+lineEnd+
                                     "Content-Type: application/octet-stream"+lineEnd+lineEnd;
         
         footer = lineEnd + lineEnd + "--"+ lotsHyphens+boundary+"--"+lineEnd;
         
-        header="POST ";
-        header +=url.getFile();
-        header +=" HTTP/1.1";
-        header +=lineEnd;
+        request="POST ";
+        request +=url.getFile();
+        request +=" HTTP/1.1";
+        request +=lineEnd;
                
         header +="Host: ";
         header +=url.getHost();
@@ -156,29 +157,30 @@ public class FileUploader {
         
         header +="Accept-Language: en-us,en;q=0.5";
         header += lineEnd;
-        
-        header +="Accept-Encoding: gzip,deflate";
-        header +=lineEnd;
-        
+                
         header +="Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
         header += lineEnd;
-        
-        header +="Keep-Alive: 300";
-        header += lineEnd;
-        
-        header +="Connection: keep-alive";
-        header += lineEnd;
-        
+                
         header +="Content-Type: multipart/form-data; boundary=";
         header +=lotsHyphens;
         header +=boundary;
         header +=lineEnd;
                        
         header +="Content-Length: ";
-        header += ""+(file.length()+header.length()+afterContentLength.length()+footer.length());
+        header += ""+(file.length()+afterContent.length());
+        //header += ""+file.length();
         header +=lineEnd;
         header +=lineEnd;
                 
-        header +=afterContentLength;
+        header +=afterContent;
+        
+        System.out.println("****************************************************************");
+        System.out.println("HeaderLength: "+header.length());
+        System.out.println("FooterLength: "+footer.length());
+        System.out.println("RequestLength: "+request.length());
+        System.out.println("FileLength: "+file.length());
+        System.out.println("Hypens Length: "+lotsHyphens.length());
+        System.out.println("Boundary Length: "+boundary.length());
+        System.out.println("AfterContent length: "+afterContent.length());
     }
 }
