@@ -50,6 +50,10 @@ public class Main extends JApplet implements MouseListener {
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     
     public void init() {
+            
+        System.out.println("HOST: "+System.getProperties().getProperty("deployment.proxy.http.host"));
+        System.out.println("PORT: "+System.getProperties().getProperty("deployment.proxy.http.port"));
+        
         try {
             // Set the look of the applet to be the same as the system standard
             // of the computer that the applet is running on.
@@ -234,8 +238,14 @@ public class Main extends JApplet implements MouseListener {
     
     public void uploadClick() {
         if(filenames !=null) {
-            JOptionPane message = new JOptionPane();
-            JOptionPane.showMessageDialog(null, "Do not close your web browser, or leave this page until upload completes.", "Postlet warning.", JOptionPane.INFORMATION_MESSAGE);
+            try {
+                if (getParameter("warnMessage").toLowerCase() == "true"){
+                    JOptionPane message = new JOptionPane();
+                    JOptionPane.showMessageDialog(null, "Do not close your web browser, or leave this page until upload completes.", "Postlet warning.", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+            catch (NullPointerException noMess){;// No need to catch this, just assume user doesn't want the warning
+            }
             add.setEnabled(false);
             remove.setEnabled(false);
             help.setEnabled(false);
