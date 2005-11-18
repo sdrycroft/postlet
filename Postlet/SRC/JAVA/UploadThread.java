@@ -39,8 +39,8 @@ public class UploadThread {
             f.uploadFile(filename);
             String response = f.getPostRequestResponse();
             System.out.println("***"+response+"***");
-            if (response.indexOf("NO")>=0) {
-                if (response.indexOf("[error] => 1")<0){
+            if (response.indexOf("FILEFAILED")>=0) {
+                if (response.indexOf("FILETOOBIG")<0){
                     if (i<3) {
                         main.setProgress(-fileSize);
                         System.out.println("Error, retrying file \""+filename+"\"");
@@ -52,20 +52,18 @@ public class UploadThread {
                     i = 5;
                 }
             }
-            else {
-                System.out.println("HERE INSTEAD!");
-            }
         } catch (java.net.MalformedURLException mue){
+            // Likely to occur during testing, as shows an error in the URL on 
+            // the webpage.  Users shouldn't see this error.
             System.err.println("MalformedURLException");
             System.err.println(mue.getMessage());
         } catch (java.io.IOException ioee){
-            //try {
-                System.err.println("IOException");
-                System.err.println(ioee.toString());
-                //System.err.println(ioee.getStackTrace().toString());
-                String response = f.getPostRequestResponse();
-                System.out.println("***"+response+"***");
-            //} catch (java.io.IOException ioexc){;}
+            // If this occurs during normal use, and not during testing, it is
+            // likely to be caused by the user deleting a file before it is 
+            // uploaded.  Probably best to give an error about this.
+            System.err.println("IOException");
+            System.err.println(ioee.toString());
         }
+        f = null;
     }
 }
