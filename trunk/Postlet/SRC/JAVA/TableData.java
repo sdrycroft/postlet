@@ -24,15 +24,17 @@ public class TableData extends AbstractTableModel
 	
 	Vector myTable;  
   	int colCount;
-        public final static String [] headers = {"Filename","Size - Kb"};
+        String [] headers = {"Filename","Size - Kb"};
         int totalFileSize;
-
-  	public TableData()  
-	{
-		myTable = new Vector();	
-		colCount = 2;
-                totalFileSize =0;
- 	}	
+        
+        public TableData(String file, String size){
+            
+            myTable = new Vector();	
+            colCount = 2;            
+            totalFileSize =0;
+            headers[0] = file;
+            headers[1] = size;
+        }
    
 	public String getColumnName(int i) 
 	{     
