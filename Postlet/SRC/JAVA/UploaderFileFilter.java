@@ -17,13 +17,9 @@
 import java.io.File;
 import java.util.Hashtable;
 import java.util.Enumeration;
-import javax.swing.*;
-import javax.swing.filechooser.*;
+import javax.swing.filechooser.FileFilter;
 
 public class UploaderFileFilter extends FileFilter {
-
-    private static String TYPE_UNKNOWN = "Type Unknown";
-    private static String HIDDEN_FILE = "Hidden File";
 
     private Hashtable filters = null;
     private String description = null;
@@ -33,33 +29,11 @@ public class UploaderFileFilter extends FileFilter {
     public UploaderFileFilter() {
 	this.filters = new Hashtable();
     }
-
-    public UploaderFileFilter(String extension) {
-	this(extension,null);
-    }
-
-    public UploaderFileFilter(String extension, String description) {
-	this();
-	if(extension!=null) addExtension(extension);
- 	if(description!=null) setDescription(description);
-    }
-
-    public UploaderFileFilter(String[] filters) {
-	this(filters, null);
-    }
-
-    public UploaderFileFilter(String[] filters, String description) {
-	this();
-	for (int i = 0; i < filters.length; i++) {
-	    // add filters one by one
-	    addExtension(filters[i]);
-	}
- 	if(description!=null) setDescription(description);
-    }
-
+    
     public boolean accept(File f) {
 	if(f != null) {
 	    if(f.isDirectory()) {
+                // Accept directories.  Change when code will allow.
 		return true;
 	    }
 	    String extension = getExtension(f);

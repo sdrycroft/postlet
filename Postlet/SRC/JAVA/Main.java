@@ -15,18 +15,12 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
 
 import java.awt.*;
-import java.util.*;
-import java.applet.Applet;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.io.*;
 import java.awt.event.*;
-import javax.swing.event.*;
 import java.net.*;
-import javax.swing.JDialog;
-import java.lang.*;
-import javax.swing.JApplet;
-
+import java.util.Vector;
 
 public class Main extends JApplet implements MouseListener {
     JScrollPane scrollPane;
@@ -35,9 +29,8 @@ public class Main extends JApplet implements MouseListener {
     JButton add, remove, upload, help;
     String rowData [][];
     String filenames[];
-    TableColumn left, middle, right;
     TableData tabledata;
-    FileUploader fu;
+    //FileUploader fu;
     File [] file;
     JLabel progressLabel;
     JProgressBar progBar;
@@ -48,9 +41,20 @@ public class Main extends JApplet implements MouseListener {
     String destination;
     URL endpage, helppage;
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
+    PostletLabels pLabels;
     
     public void init() {
             
+        if (getParameter("language")==null){       
+            showStatus("Postlet: EN");
+            pLabels = new PostletLabels("EN", null);
+        }
+        else{
+            showStatus("Postlet: "+getParameter("language"));
+            pLabels = new PostletLabels(getParameter("language"), getCodeBase());
+        }
+        
+        System.out.println("Postlet version: 0.6 - 21.11.2005");
         System.out.println("HOST: "+System.getProperties().getProperty("deployment.proxy.http.host"));
         System.out.println("PORT: "+System.getProperties().getProperty("deployment.proxy.http.port"));
         
@@ -69,12 +73,12 @@ public class Main extends JApplet implements MouseListener {
             } catch(java.net.MalformedURLException malurlex){
                 // Do something here for badly formed destination, which is ESENTIAL.
                 JOptionPane message = new JOptionPane();
-                JOptionPane.showMessageDialog(null, "The destination URL provided is not a valid one.","Postlet error.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
                 destination = null;
             } catch(java.lang.NullPointerException npe){
                 // Do something here for the missing destination, which is ESENTIAL.
                 JOptionPane message = new JOptionPane();
-                JOptionPane.showMessageDialog(null, "You have not provided a destination URL.", "Postlet error.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
                 destination = "http://darwin.zoology.gla.ac.uk/~sdrycroft/javaUpload.php";
             }
             
@@ -137,11 +141,11 @@ public class Main extends JApplet implements MouseListener {
             Container pane = getContentPane();
             
             // Table for the adding of Filenames and sizes to.
-            tabledata = new TableData();
+            tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
             table = new JTable(tabledata);
             table.setColumnSelectionAllowed(false);
             //table.setDragEnabled(false);
-            table.getColumn("Filename").setMinWidth(300);
+            table.getColumn(pLabels.getLabel(0)).setMinWidth(300);
             if (columnHeadColourBack != null && backgroundColour != null){
                 table.getTableHeader().setBackground(columnHeadColourBack);
                 table.getTableHeader().setForeground(columnHeadColourFore);
@@ -157,21 +161,21 @@ public class Main extends JApplet implements MouseListener {
             rightPanel = new JPanel(new GridLayout(4,1,10,10));
             rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
             
-            add = new JButton("Add");
+            add = new JButton(pLabels.getLabel(6));
             add.addMouseListener(this);
             rightPanel.add(add);
             
-            remove = new JButton("Remove");
+            remove = new JButton(pLabels.getLabel(7));
             remove.addMouseListener(this);
             remove.setEnabled(false);
             rightPanel.add(remove);
             
-            upload = new JButton("Upload");
+            upload = new JButton(pLabels.getLabel(8));
             upload.addMouseListener(this);
             upload.setEnabled(false);
             rightPanel.add(upload);
             
-            help = new JButton("Help");
+            help = new JButton(pLabels.getLabel(9));
             help.addMouseListener(this);
             rightPanel.add(help);
             pane.add(rightPanel,"East");
@@ -179,7 +183,7 @@ public class Main extends JApplet implements MouseListener {
             JPanel progPanel = new JPanel(new GridLayout(1, 3));
             progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
             
-            JLabel progCompletion = new JLabel("Upload progress: ",SwingConstants.RIGHT);
+            JLabel progCompletion = new JLabel(pLabels.getLabel(10),SwingConstants.RIGHT);
             progPanel.add(progCompletion);
             
             progBar = new JProgressBar();
@@ -209,7 +213,9 @@ public class Main extends JApplet implements MouseListener {
                 remove.setEnabled(false);
                 add.setEnabled(false);
                 upload.setEnabled(false);
-            }
+            }            
+            showStatus("Postlet: Started");
+            
         } catch (java.lang.OutOfMemoryError oomerr){
             System.out.println("OUT OF MEMORY HERE!");
         }
@@ -241,7 +247,7 @@ public class Main extends JApplet implements MouseListener {
             try {
                 if (getParameter("warnMessage").toLowerCase() == "true"){
                     JOptionPane message = new JOptionPane();
-                    JOptionPane.showMessageDialog(null, "Do not close your web browser, or leave this page until upload completes.", "Postlet warning.", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, pLabels.getLabel(11), pLabels.getLabel(12), JOptionPane.INFORMATION_MESSAGE);
                 }
             }
             catch (NullPointerException noMess){;// No need to catch this, just assume user doesn't want the warning
@@ -292,7 +298,7 @@ public class Main extends JApplet implements MouseListener {
             i++;
         }
         tabledata.formatTable(rowData,i);
-        table.getColumn("Filename").setMinWidth(300);
+        table.getColumn(pLabels.getLabel(0)).setMinWidth(300);
         repaint();
     }
     
@@ -309,16 +315,40 @@ public class Main extends JApplet implements MouseListener {
         filter.addExtension("png");
         filter.addExtension("raw");
         filter.addExtension("tif");
-        filter.setDescription("Image files");
+        filter.setDescription(pLabels.getLabel(13));
         chooser.setFileFilter(filter);
                 
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
         chooser.getSelectedFile();
-        chooser.setDialogTitle("Select file for upload");
+        chooser.setDialogTitle(pLabels.getLabel(14));
         int returnVal = chooser.showOpenDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFiles();
+            File [] tempFiles = chooser.getSelectedFiles();
+            Vector filesForUpload = new Vector();
+            for (int i=0; i<tempFiles.length; i++){
+                if (tempFiles[i].isDirectory()){
+                    File [] subDirFiles = tempFiles[i].listFiles();
+                    for (int j = 0; j<subDirFiles.length; j++){
+                        if (subDirFiles[j].isFile())
+                            filesForUpload.add(subDirFiles[j]);
+                    }
+                        
+                }
+                else
+                    filesForUpload.add(tempFiles[i]);
+            }
+            if (file == null){
+                file = new File[0];
+            }
+            tempFiles = new File[filesForUpload.size()+file.length];
+            System.out.println("Length of files is: "+filesForUpload.size()+file.length);
+            for (int i=0; i<file.length; i++)
+                tempFiles[i] = file[i];
+            for (int i=0; i<filesForUpload.size(); i++){
+                tempFiles[i+file.length] = (File)filesForUpload.elementAt(i);
+            }
+            file = tempFiles;
             tableUpdate();
         }
         if (file.length>0) {
@@ -336,7 +366,7 @@ public class Main extends JApplet implements MouseListener {
         String helpUrl;
         helpUrl = getParameter("helppage");
         if (helpUrl == null){
-            helpUrl = "http://postlet.sourceforge.net/help/";
+            helpUrl = "http://www.postlet.com/help/";
         }
         System.out.println("Help page is:"+helpUrl);
         try {
@@ -345,7 +375,7 @@ public class Main extends JApplet implements MouseListener {
             // Show a popup with help instead!
             System.err.println("Error with help dialog");
             JOptionPane message = new JOptionPane();
-            JOptionPane.showMessageDialog(null, "The help URL provided is not a valid one.","Postlet error.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, pLabels.getLabel(14),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
             message.setVisible(true);
         }
         

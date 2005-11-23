@@ -59,7 +59,12 @@ public class FileUploader {
             try {
                 String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
                 String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
-                if (proxyHost == "")
+                String proxyType = System.getProperties().getProperty("deployment.proxy.type");
+                
+                if (proxyHost.equalsIgnoreCase("")  || 
+                        proxyType.equalsIgnoreCase("0") || 
+                        proxyType.equalsIgnoreCase("1") || 
+                        proxyType.equalsIgnoreCase("-1"))
                     sock = new Socket(url.getHost(),80);
                 else{
                     try {
