@@ -64,13 +64,25 @@ public class FileUploader {
                 if (proxyHost.equalsIgnoreCase("")  || 
                         proxyType.equalsIgnoreCase("0") || 
                         proxyType.equalsIgnoreCase("1") || 
-                        proxyType.equalsIgnoreCase("-1"))
-                    sock = new Socket(url.getHost(),80);
+                        proxyType.equalsIgnoreCase("-1")){
+                    if (url.getPort()>0)
+                        sock = new Socket(url.getHost(),url.getPort());
+                    else
+                        sock = new Socket(url.getHost(),80);
+                }
                 else{
                     try {
                         sock = new Socket(proxyHost,Integer.parseInt(proxyPort));}
                     catch (NumberFormatException badPort){
-                        sock = new Socket(url.getHost(),80);}
+                        // Probably not a bad idea to try a list of standard Proxy ports
+                        // here (8080, 3128 ..), then default to trying the final one.
+                        // This could possibly be causing problems, display of an
+                        // error message is probably also a good idea.
+                        if (url.getPort()>0)
+                            sock = new Socket(url.getHost(),url.getPort());
+                        else
+                            sock = new Socket(url.getHost(),80);
+                    }
                 }
             }
             catch (NullPointerException npe){
@@ -120,7 +132,8 @@ public class FileUploader {
             output.flush();
                         
             // Read the reply
-            String line;            
+            String line;      
+            reply ="";
             while ((line = input.readLine())!=null){
                 reply += line;
             }
@@ -206,8 +219,7 @@ public class FileUploader {
                        
         // Length of what we are sending.
         header +="Content-Length: ";
-        header += ""+(file.length()+afterContent.length());
-        //header += ""+file.length();
+        header += ""+(file.length()+afterContent.length()+footer.length());
         header +=lineEnd;
         header +=lineEnd;
                 
