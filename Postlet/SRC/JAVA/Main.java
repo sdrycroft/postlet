@@ -73,12 +73,10 @@ public class Main extends JApplet implements MouseListener {
                 System.out.println("Destination has been set to:"+destination);
             } catch(java.net.MalformedURLException malurlex){
                 // Do something here for badly formed destination, which is ESENTIAL.
-                JOptionPane message = new JOptionPane();
                 JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
                 destination = null;
             } catch(java.lang.NullPointerException npe){
                 // Do something here for the missing destination, which is ESENTIAL.
-                JOptionPane message = new JOptionPane();
                 JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
                 destination = "http://darwin.zoology.gla.ac.uk/~sdrycroft/javaUpload.php";
             }
@@ -244,7 +242,6 @@ public class Main extends JApplet implements MouseListener {
         if(filenames !=null) {
             try {
                 if (getParameter("warnMessage").toLowerCase() == "true"){
-                    JOptionPane message = new JOptionPane();
                     JOptionPane.showMessageDialog(null, pLabels.getLabel(11), pLabels.getLabel(12), JOptionPane.INFORMATION_MESSAGE);
                 }
             }
@@ -266,7 +263,7 @@ public class Main extends JApplet implements MouseListener {
         sentBytes += a;
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
-            progCompletion.setText("FINISHED");
+            progCompletion.setText(pLabels.getLabel(2));
             try {
                 endpage = new URL(getParameter("endpage"));
                 getAppletContext().showDocument(endpage);
@@ -349,7 +346,7 @@ public class Main extends JApplet implements MouseListener {
             file = tempFiles;
             tableUpdate();
         }
-        if (file.length>0) {
+        if (file != null && file.length>0) {
             upload.setEnabled(true);
             remove.setEnabled(true);
         }
@@ -372,9 +369,7 @@ public class Main extends JApplet implements MouseListener {
         } catch (MalformedURLException helpexception){
             // Show a popup with help instead!
             System.err.println("Error with help dialog");
-            JOptionPane message = new JOptionPane();
             JOptionPane.showMessageDialog(null, pLabels.getLabel(14),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
-            message.setVisible(true);
         }
         
     }

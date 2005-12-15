@@ -39,7 +39,7 @@ public class UploadThread {
             f.uploadFile(filename);
             String response = f.getPostRequestResponse();
             System.out.println("***"+response+"***");
-            if (response.indexOf("FILEFAILED")>=0) {
+            if (response != null && response.indexOf("FILEFAILED")>=0) {
                 if (response.indexOf("FILETOOBIG")<0){
                     if (i<3) {
                         main.setProgress(-fileSize);
