@@ -30,9 +30,10 @@ public class Main extends JApplet implements MouseListener {
     String rowData [][];
     String filenames[];
     TableData tabledata;
+    TableColumn sizeColumn;
     //FileUploader fu;
     File [] file;
-    JLabel progressLabel;
+    JLabel progCompletion;
     JProgressBar progBar;
     int sentBytes;
     int fileSize[];
@@ -54,7 +55,7 @@ public class Main extends JApplet implements MouseListener {
             pLabels = new PostletLabels(getParameter("language"), getCodeBase());
         }
         
-        System.out.println("Postlet version: 0.6 - 21.11.2005");
+        System.out.println("Postlet version: 0.6 - 30.11.2005");
         System.out.println("HOST: "+System.getProperties().getProperty("deployment.proxy.http.host"));
         System.out.println("PORT: "+System.getProperties().getProperty("deployment.proxy.http.port"));
         
@@ -144,8 +145,10 @@ public class Main extends JApplet implements MouseListener {
             tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
             table = new JTable(tabledata);
             table.setColumnSelectionAllowed(false);
-            //table.setDragEnabled(false);
-            table.getColumn(pLabels.getLabel(0)).setMinWidth(300);
+            //table.setDragEnabled(false);            
+            sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
+            sizeColumn.setMaxWidth(100);
+            table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);         
             if (columnHeadColourBack != null && backgroundColour != null){
                 table.getTableHeader().setBackground(columnHeadColourBack);
                 table.getTableHeader().setForeground(columnHeadColourFore);
@@ -180,21 +183,16 @@ public class Main extends JApplet implements MouseListener {
             rightPanel.add(help);
             pane.add(rightPanel,"East");
             
-            JPanel progPanel = new JPanel(new GridLayout(1, 3));
+            JPanel progPanel = new JPanel(new GridLayout(2, 1));
             progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
             
-            JLabel progCompletion = new JLabel(pLabels.getLabel(10),SwingConstants.RIGHT);
+            progCompletion = new JLabel(pLabels.getLabel(10),SwingConstants.CENTER);
             progPanel.add(progCompletion);
             
             progBar = new JProgressBar();
             progPanel.add(progBar);
-            
-            progressLabel = new JLabel("",SwingConstants.CENTER);
-            progressLabel.setFont(font);
-            //progressLabel.setForeground(blue);
-            progPanel.add(progressLabel);
-            
-            
+            progPanel.setBorder(BorderFactory.createEmptyBorder(5,25,5,25));
+                                  
             if (backgroundColour != null){
                 pane.setBackground(backgroundColour);
                 rightPanel.setBackground(backgroundColour);
@@ -268,7 +266,7 @@ public class Main extends JApplet implements MouseListener {
         sentBytes += a;
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
-            progressLabel.setText("FINISHED");
+            progCompletion.setText("FINISHED");
             try {
                 endpage = new URL(getParameter("endpage"));
                 getAppletContext().showDocument(endpage);
@@ -298,14 +296,14 @@ public class Main extends JApplet implements MouseListener {
             i++;
         }
         tabledata.formatTable(rowData,i);
-        table.getColumn(pLabels.getLabel(0)).setMinWidth(300);
+        sizeColumn.setMaxWidth(100);
+        sizeColumn.setMinWidth(100);  
         repaint();
     }
     
     public void addClick() {
         JFileChooser chooser = new JFileChooser();
         
-        progressLabel.setText("");
         progBar.setValue(0);
         UploaderFileFilter filter = new UploaderFileFilter();
         filter.addExtension("jpg");
