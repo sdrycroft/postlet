@@ -55,7 +55,7 @@ public class Main extends JApplet implements MouseListener {
             pLabels = new PostletLabels(getParameter("language"), getCodeBase());
         }
         
-        System.out.println("Postlet version: 0.6 - 30.11.2005");
+        System.out.println("Postlet version: 0.6.2 - 30.01.2006");
         System.out.println("HOST: "+System.getProperties().getProperty("deployment.proxy.http.host"));
         System.out.println("PORT: "+System.getProperties().getProperty("deployment.proxy.http.port"));
         
