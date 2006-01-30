@@ -1,0 +1,39 @@
+README
+========================================
+
+	1. About
+	2. Using
+	3. Compiling
+
+1. About:
+
+If you've downloaded Postlet, then it is
+likely that you already know what
+Postlet is, but put simply, it is a way
+of simply uploading files to a server
+using HTTP.
+
+2. Using:
+
+Inorder to use Postlet, you must have a
+compiled copy of it.  This can be done
+simply on any *NIX system (Linux, Mac OS
+X, etc) by following the instructions
+below.  Instructions for Windows will
+follow soon.  This will produce a copy
+of postlet.jar in the dist directory. 
+You may also download a pre compiled
+version of it from
+http://www.postlet.com
+
+3. Compiling:
+
+- *NIX
+In order to compile on a *NIX system,
+you must first ensure that you have
+installed a suitable Java SDK (anything
+higher than Java 1.3), and that you have
+set up your Keys to sign a java applet.
+If the key is named tstkey, then all
+that need be done to compile the applet
+is to run build.sh.  Could it be easier?
