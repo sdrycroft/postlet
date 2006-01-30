@@ -61,10 +61,15 @@ public class FileUploader {
                 String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
                 String proxyType = System.getProperties().getProperty("deployment.proxy.type");
                 
-                if (proxyHost.equalsIgnoreCase("")  || 
+		System.out.println("proxy host: "+proxyHost);
+		System.out.println("proxy port: "+proxyPort);
+		System.out.println("proxy type: "+proxyType);
+                System.out.println("Java system property - host: "+System.getProperty("http.proxyHost"));
+                System.out.println("Java system property - port: "+System.getProperty("http.proxyPort"));
+                if ((proxyHost == null || proxyType == null)|| (proxyHost.equalsIgnoreCase("")  || 
                         proxyType.equalsIgnoreCase("0") || 
                         proxyType.equalsIgnoreCase("1") || 
-                        proxyType.equalsIgnoreCase("-1")){
+                        proxyType.equalsIgnoreCase("-1") )) {
                     if (url.getPort()>0)
                         sock = new Socket(url.getHost(),url.getPort());
                     else
@@ -86,6 +91,8 @@ public class FileUploader {
                 }
             }
             catch (NullPointerException npe){
+		System.out.println("There has been an error with your destination URL. Defaulting!");
+		System.out.println(npe.getLocalizedMessage());
                 sock = new Socket(url.getHost(),80);}
 
             // Output stream, for writing to the socket.
