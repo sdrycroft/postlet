@@ -225,7 +225,7 @@ public class FileUploader {
 
         // Length of what we are sending.
         header +="Content-Length: ";
-        header += ""+(file.length()+afterContent.length()+footer.length());
+        header += ""+(file.length()+afterContent.length());
         header +=lineEnd;
         header +=lineEnd;
 
