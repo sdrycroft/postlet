@@ -7,4 +7,4 @@ jarsigner postlet.jar tstkey
 rm -rf ../postlet/postlet.jar
 cp postlet.jar ../postlet/
 cd ..
-zip -r postlet.zip postlet
+zip -r postlet.zip postlet/index.html postlet/javaUpload.php postlet/LICENCE postlet/postlet.jar postlet/README postlet/uploadTest.html
