@@ -4,3 +4,7 @@ cd dist
 jar cvfm postlet.jar ../SRC/manifest *.class
 rm -rf *.class
 jarsigner postlet.jar tstkey
+rm -rf ../postlet/postlet.jar
+cp postlet.jar ../postlet/
+cd ..
+zip -r postlet.zip postlet
