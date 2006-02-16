@@ -31,7 +31,7 @@ import java.io.FileNotFoundException;
 
 public class FileUploader {
     private static String lotsHyphens="---------------------------";
-    private static String lineEnd="\n";
+    private static String lineEnd="\r\n";
     private String header, footer, request, reply;
     private File file;
     private URL url;
@@ -51,6 +51,7 @@ public class FileUploader {
         try {
          
             file = new File(filename);
+
             this.setBoundary(40);
             this.setHeaderAndFooter();
             

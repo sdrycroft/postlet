@@ -17,7 +17,7 @@
 import java.io.*;
 
 public class UploadThread {
-//public class UploadThread extends Thread {
+
     private String filename;
     private String scriptURL;
     private Main main;
