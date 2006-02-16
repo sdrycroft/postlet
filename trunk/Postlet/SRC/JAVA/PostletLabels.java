@@ -32,11 +32,14 @@ public class PostletLabels {
 	// French
 	// Italian
 	// Portuguese
-    public static final String languages [] = {"EN","DE","NL","FR","ES","IT","NO","FI","TU"};
-    private String [] language;     
+
+    // Current: EN, DE, NL, FR, ES, IT, NO, TU, FI
+    private String [] language;
+
     private static final int numLabels = 16;
     
-    private static final String [] EN = {
+    private static final String [][] languages = {{
+                "EN",
                 "Filename",             //0
                 "File Size",            //1
                 "Finished",             //2
@@ -52,9 +55,9 @@ public class PostletLabels {
                 "Postlet warning",      //12
                 "Image files",          //13
                 "Select file for upload", //14
-                "The help URL provided is not a valid one."}; //15
-                
-    private static final String [] DE = {
+                "The help URL provided is not a valid one."},
+                {
+                "DE",
                 "Dateiname",//0
                 "Dateigröße",//1
                 "Fertig",
@@ -70,9 +73,9 @@ public class PostletLabels {
                 "Postlet Warnung",
                 "Bild-Dateien",
                 "Datei zum hochladen auswählen",
-                "Die angegebene Hilfe-URL ist nicht gültig."};
-                
-    private static final String [] NL = {
+                "Die angegebene Hilfe-URL ist nicht gültig."},
+                {
+                "NL",
                 "Bestands naam",
                 "Bestands grootte",
                 "Klaar",
@@ -88,9 +91,9 @@ public class PostletLabels {
                 "Postlet waarschuwing",
                 "Plaatjes bestanden",
                 "Selecteer bestand voor upload",
-                "De help URL is niet correct"};
-
-    private static final String [] FR = {
+                "De help URL is niet correct"},
+                {
+                "FR",
                 "Nom de fichier", //0 
                 "Taille du fichier", //1 
                 "Terminé", //2 
@@ -106,9 +109,9 @@ public class PostletLabels {
                 "Avertissement Postlet", //12 
                 "Fichiers image", //13 
                 "Selectionner les fichiers à envoyer", //14 
-                "L'URL de l'aide fournie n'est pas valide."}; //15 
-
-    private static final String [] ES = {
+                "L'URL de l'aide fournie n'est pas valide."},
+                {
+                "ES",
                 "Fichero",             //0
                 "Tamaño",            //1
                 "Terminado",             //2
@@ -124,9 +127,9 @@ public class PostletLabels {
                 "Aviso del Postlet",      //12
                 "Ficheros de imágenes",          //13
                 "Selecciona los ficheros para subir", //14
-                "La URL de ayuda no es válida."}; //15
-
-    private static final String [] IT = {
+                "La URL de ayuda no es válida."},
+                {
+                "IT",
                 "Nome File",//0
                 "Dimensione File",//1
                 "Terminato",//2
@@ -142,9 +145,9 @@ public class PostletLabels {
                 "Avvertimento di Postlet",//12
                 "File immagine",//13
                 "Seleziona il file da trasferire",//14
-                "L'indirizzo dell'help non è valido."};//15
-
-    private static final String [] NO = {
+                "L'indirizzo dell'help non è valido."},
+                {
+                "NO",
                 "Filnavn",
                 "Fil størrelse",
                 "Ferdig",
@@ -160,9 +163,9 @@ public class PostletLabels {
                 "Postlet advarsel",
                 "Bildefiler",
                 "Velg fil for opplasting",
-                "Den angitte hjelp URL er ikke gyldig."};
-
-    private static final String [] FI = {
+                "Den angitte hjelp URL er ikke gyldig."},
+                {
+                "FI",
                 "Tiedoston nimi",
                 "Tiedoston koko",
                 "Valmis",
@@ -178,9 +181,9 @@ public class PostletLabels {
                 "Postlet -varoitus",
                 "Kuvatiedostot",
                 "Valitse tiedosto, jonka aiot ladata",
-                "Help-toiminnon URL-osoitetta ei löydy."};
-
-    private static final String [] TU = {
+                "Help-toiminnon URL-osoitetta ei löydy."},
+                {
+                "TU",
                 "Dosya Adý",
                 "Dosya Boyutu",
                 "Bitti",
@@ -196,48 +199,27 @@ public class PostletLabels {
                 "Postlet uyarýsý",
                 "Resim (imaj) dosyalarý",
                 "Yükleme için dosya seçin",
-                "The help URL provided is not a valid one."}; //15
+                "The help URL provided is not a valid one."}}; //15
 
     /** Creates a new instance of PostletLabels */
     public PostletLabels(String l, URL codeBase) {
         System.out.println(l);
         boolean languageIncluded = false;
         for (int i=0; i<languages.length; i++){
-            if (languages[i].equalsIgnoreCase(l)){
+            if (languages[i][0].equalsIgnoreCase(l)){
                 languageIncluded = true;
+                language = languages[i];
                 break;
             }
         }
-        if (languageIncluded){
-            if (l.equalsIgnoreCase("EN"))
-                language = EN;
-            else if (l.equalsIgnoreCase("DE"))
-                language = DE;
-            else if (l.equalsIgnoreCase("NL"))
-                language = NL;
-            else if (l.equalsIgnoreCase("FR"))
-                language = FR;
-            else if (l.equalsIgnoreCase("ES"))
-                language = ES;
-            else if (l.equalsIgnoreCase("IT"))
-                language = IT;
-            else if (l.equalsIgnoreCase("NO"))
-                language = NO;
-            else if (l.equalsIgnoreCase("FI"))
-                language = FI;
-            else if (l.equalsIgnoreCase("TU"))
-                language = TU;
-        }
-        else
+        if (!languageIncluded)
             readUserDefinedLanguageFile(codeBase, l);
     }
     
     public String getLabel(int i){
-        for (int j=0; j < numLabels; j++)
-            System.out.println(language[j]);
         if (i >= numLabels)
             return "ERROR!";
-        return language[i];
+        return language[i+1];
     }
     // Method reads a standard named file, from the server (same directory as the
     // jar file), and sets the labels from this.
@@ -251,13 +233,13 @@ public class PostletLabels {
         }
         catch (FileNotFoundException fnf){
             // File not found, default used instead.
-            language = EN;
+            language = languages[0];
             System.out.println("Language file not found, using English as default.");       
         }
         catch (IOException ioe){
             // File probably too short.
-            language = EN;
-            System.out.println("Language file possibly too short, please ensure it has 16 lines, terminated by a final carriage return");
+            language = languages[0];
+            System.out.println("Language file possibly too short, please ensure it has 17 lines, terminated by a final carriage return");
         }
     }
 }
