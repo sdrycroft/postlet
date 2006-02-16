@@ -45,178 +45,147 @@ public class Main extends JApplet implements MouseListener {
     PostletLabels pLabels;
     
     public void init() {
-            
-        if (getParameter("language")==null){       
-            showStatus("Postlet: EN");
+
+        // First thing, output the version, for debugging purposes.
+        System.out.println("Postlet version: 0.6.5 - 16.02.2006");
+
+        // Set the lanuage.
+        if (getParameter("language")==null)
             pLabels = new PostletLabels("EN", null);
-        }
-        else{
-            showStatus("Postlet: "+getParameter("language"));
+        else
             pLabels = new PostletLabels(getParameter("language"), getCodeBase());
-        }
-        
-        System.out.println("Postlet version: 0.6.2 - 30.01.2006");
-        System.out.println("HOST: "+System.getProperties().getProperty("deployment.proxy.http.host"));
-        System.out.println("PORT: "+System.getProperties().getProperty("deployment.proxy.http.port"));
-        
+
         try {
-            // Set the look of the applet to be the same as the system standard
-            // of the computer that the applet is running on.
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (UnsupportedLookAndFeelException exc){;} catch (IllegalAccessException exc){;} catch (ClassNotFoundException exc){;} catch (InstantiationException exc){;}
-            
-            // Get the destination which is set by a parameter.
-            try {
-                URL dest = new URL(getParameter("destination"));
-                destination = getParameter("destination");
-                System.out.println("Destination has been set to:"+destination);
-            } catch(java.net.MalformedURLException malurlex){
-                // Do something here for badly formed destination, which is ESENTIAL.
-                JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
-                destination = null;
-            } catch(java.lang.NullPointerException npe){
-                // Do something here for the missing destination, which is ESENTIAL.
-                JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
-                destination = "http://darwin.zoology.gla.ac.uk/~sdrycroft/javaUpload.php";
-            }
-            
-            try {
-                // Set the background color, which is set by a parameter.
-                Integer redInteger = new Integer(getParameter("red"));
-                int red = redInteger.intValue();
-                Integer greenInteger = new Integer(getParameter("green"));
-                int green = greenInteger.intValue();
-                Integer blueInteger = new Integer(getParameter("blue"));
-                int blue = blueInteger.intValue();
-                backgroundColour = new Color(red, green, blue);
-                System.out.println("Background colour has been set to:"+red+"/"+green+"/"+blue);
-                // Try and dispose of all variables when finished with (memory is essential).
-                redInteger= null;
-                blueInteger= null;
-                greenInteger = null;
-                
-                // Set the background colour of the table headers.
-                redInteger = new Integer(getParameter("redheaderback"));
-                int redheaderback = redInteger.intValue();
-                greenInteger = new Integer(getParameter("greenheaderback"));
-                int greenheaderback = greenInteger.intValue();
-                blueInteger = new Integer(getParameter("blueheaderback"));
-                int blueheaderback = blueInteger.intValue();
-                columnHeadColourBack = new Color(redheaderback, greenheaderback, blueheaderback);
-                redInteger = null;
-                blueInteger= null;
-                greenInteger = null;
-                
-                // Set the foreground colour of the table headers.
-                redInteger = new Integer(getParameter("redheader"));
-                int redheader = redInteger.intValue();
-                greenInteger = new Integer(getParameter("greenheader"));
-                int greenheader = greenInteger.intValue();
-                blueInteger = new Integer(getParameter("blueheader"));
-                int blueheader = blueInteger.intValue();
-                columnHeadColourFore = new Color(redheader, greenheader, blueheader);
-                // Try and dispose of all variables when finished with (memory is essential).
-                redInteger = null;
-                blueInteger= null;
-                greenInteger = null;
-            } catch(java.lang.NullPointerException npered){
-                // Color isn't set.
-                // Just ignore this, and set the background color to the
-                // default one.
-                backgroundColour = null;
-                columnHeadColourFore = null;
-                columnHeadColourBack = null;
-            } catch(java.lang.NumberFormatException numfe){
-                // Color isn't set.
-                // Just ignore this, and set the background color to the
-                // default one.
-                backgroundColour = null;
-                columnHeadColourFore = null;
-                columnHeadColourBack = null;
-            }
-            
-            // Get the main pane to add content to.
-            Container pane = getContentPane();
-            
-            // Table for the adding of Filenames and sizes to.
-            tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
-            table = new JTable(tabledata);
-            table.setColumnSelectionAllowed(false);
-            //table.setDragEnabled(false);            
-            sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
-            sizeColumn.setMaxWidth(100);
-            table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);         
-            if (columnHeadColourBack != null && backgroundColour != null){
-                table.getTableHeader().setBackground(columnHeadColourBack);
-                table.getTableHeader().setForeground(columnHeadColourFore);
-                table.setBackground(backgroundColour);
-                //table.getTableHeader().setForeground(columnHeadColour);
-            }
-            scrollPane = new JScrollPane(table);
-            scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-            
-            // Add the scroll pane/table to the main pane
-            pane.add(scrollPane, BorderLayout.CENTER);
-            
-            rightPanel = new JPanel(new GridLayout(4,1,10,10));
-            rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-            
-            add = new JButton(pLabels.getLabel(6));
-            add.addMouseListener(this);
-            rightPanel.add(add);
-            
-            remove = new JButton(pLabels.getLabel(7));
-            remove.addMouseListener(this);
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (UnsupportedLookAndFeelException exc){;}
+        catch (IllegalAccessException exc){;} 
+        catch (ClassNotFoundException exc){;} 
+        catch (InstantiationException exc){;}
+
+        // Get the destination which is set by a parameter.
+        try {
+            URL dest = new URL(getParameter("destination"));
+            destination = getParameter("destination");
+            System.out.println("Destination:"+destination);
+        } catch(java.net.MalformedURLException malurlex){
+            // Do something here for badly formed destination, which is ESENTIAL.
+            System.out.println("BADLY FORMED DESTINATION");
+            JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
+        } catch(java.lang.NullPointerException npe){
+            // Do something here for the missing destination, which is ESENTIAL.
+            System.out.println("NULL DESTINATION");
+            JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
+        }
+
+        try {
+            // Set the background color, which is set by a parameter.
+            Integer redInteger = new Integer(getParameter("red"));
+            int red = redInteger.intValue();
+            Integer greenInteger = new Integer(getParameter("green"));
+            int green = greenInteger.intValue();
+            Integer blueInteger = new Integer(getParameter("blue"));
+            int blue = blueInteger.intValue();
+            backgroundColour = new Color(red, green, blue);
+
+            // Set the background colour of the table headers.
+            redInteger = new Integer(getParameter("redheaderback"));
+            red = redInteger.intValue();
+            greenInteger = new Integer(getParameter("greenheaderback"));
+            green = greenInteger.intValue();
+            blueInteger = new Integer(getParameter("blueheaderback"));
+            blue = blueInteger.intValue();
+            columnHeadColourBack = new Color(red, green, blue);
+
+            // Set the foreground colour of the table headers.
+            redInteger = new Integer(getParameter("redheader"));
+            red = redInteger.intValue();
+            greenInteger = new Integer(getParameter("greenheader"));
+            green = greenInteger.intValue();
+            blueInteger = new Integer(getParameter("blueheader"));
+            blue = blueInteger.intValue();
+            columnHeadColourFore = new Color(red, green, blue);
+
+        }
+        catch(java.lang.NullPointerException npered){;}
+        catch(java.lang.NumberFormatException numfe){;}
+
+        // Get the main pane to add content to.
+        Container pane = getContentPane();
+
+        // Table for the adding of Filenames and sizes to.
+        tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
+        table = new JTable(tabledata);
+        table.setColumnSelectionAllowed(false);
+        //table.setDragEnabled(false); // This method is not available to Java 3!
+        sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
+        sizeColumn.setMaxWidth(100);
+        table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
+        if (columnHeadColourBack != null && backgroundColour != null){
+            table.getTableHeader().setBackground(columnHeadColourBack);
+            table.getTableHeader().setForeground(columnHeadColourFore);
+            table.setBackground(backgroundColour);
+            //table.getTableHeader().setForeground(columnHeadColour); // This method is not available to Java 3!
+        }
+        scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        // Add the scroll pane/table to the main pane
+        pane.add(scrollPane, BorderLayout.CENTER);
+
+        rightPanel = new JPanel(new GridLayout(4,1,10,10));
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        add = new JButton(pLabels.getLabel(6));
+        add.addMouseListener(this);
+        rightPanel.add(add);
+
+        remove = new JButton(pLabels.getLabel(7));
+        remove.addMouseListener(this);
+        remove.setEnabled(false);
+        rightPanel.add(remove);
+
+        upload = new JButton(pLabels.getLabel(8));
+        upload.addMouseListener(this);
+        upload.setEnabled(false);
+        rightPanel.add(upload);
+
+        help = new JButton(pLabels.getLabel(9));
+        help.addMouseListener(this);
+        rightPanel.add(help);
+        pane.add(rightPanel,"East");
+
+        JPanel progPanel = new JPanel(new GridLayout(2, 1));
+        progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        progCompletion = new JLabel(pLabels.getLabel(10),SwingConstants.CENTER);
+        progPanel.add(progCompletion);
+
+        progBar = new JProgressBar();
+        progPanel.add(progBar);
+        progPanel.setBorder(BorderFactory.createEmptyBorder(5,25,5,25));
+
+        if (backgroundColour != null){
+            pane.setBackground(backgroundColour);
+            rightPanel.setBackground(backgroundColour);
+            scrollPane.setBackground(backgroundColour);
+            progPanel.setBackground(backgroundColour);
+            // Always set the table background colour as White.
+            // May change this if required, only would require alot of Params!
+            scrollPane.getViewport().setBackground(Color.white);
+        }
+
+        pane.add(progPanel,"South");
+
+        // If the destination has not been set/isn't a proper URL
+        // Then deactivate the buttons.
+        if (destination == null) {
             remove.setEnabled(false);
-            rightPanel.add(remove);
-            
-            upload = new JButton(pLabels.getLabel(8));
-            upload.addMouseListener(this);
+            add.setEnabled(false);
             upload.setEnabled(false);
-            rightPanel.add(upload);
-            
-            help = new JButton(pLabels.getLabel(9));
-            help.addMouseListener(this);
-            rightPanel.add(help);
-            pane.add(rightPanel,"East");
-            
-            JPanel progPanel = new JPanel(new GridLayout(2, 1));
-            progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-            
-            progCompletion = new JLabel(pLabels.getLabel(10),SwingConstants.CENTER);
-            progPanel.add(progCompletion);
-            
-            progBar = new JProgressBar();
-            progPanel.add(progBar);
-            progPanel.setBorder(BorderFactory.createEmptyBorder(5,25,5,25));
-                                  
-            if (backgroundColour != null){
-                pane.setBackground(backgroundColour);
-                rightPanel.setBackground(backgroundColour);
-                scrollPane.setBackground(backgroundColour);
-                progPanel.setBackground(backgroundColour);
-                // Always set the table background colour as White.
-                // May change this if required, only would require alot of Params!
-                scrollPane.getViewport().setBackground(Color.white);
-            }
-            
-            pane.add(progPanel,"South");
-            
-            // If the destination has not been set/isn't a proper URL
-            // Then deactivate the buttons.
-            if (destination == null) {
-                remove.setEnabled(false);
-                add.setEnabled(false);
-                upload.setEnabled(false);
-            }            
-            showStatus("Postlet: Started");
-            
-        } catch (java.lang.OutOfMemoryError oomerr){
-            System.out.println("OUT OF MEMORY HERE!");
         }
     }
-    
+
     public void removeClick() {
         if(table.getSelectedRowCount()>0) {
             File [] fileTemp = new File[file.length-table.getSelectedRowCount()];

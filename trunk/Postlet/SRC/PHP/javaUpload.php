@@ -5,7 +5,7 @@ The following file enables the uploading of each image from the java applet.
 
 echo "RECEIVING:";
 
-$uploaddir = '/home/sdrycroft/uploads/';
+$uploaddir = '[PATH TO UPLOAD DIRECTORY]';
 
 $fpath = $_FILES['userfile']['name'];
 $fext = array_pop(explode('.', $fpath));
