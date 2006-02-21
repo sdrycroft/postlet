@@ -23,20 +23,19 @@ import java.net.*;
 import java.util.Vector;
 
 public class Main extends JApplet implements MouseListener {
-    JScrollPane scrollPane;
+    //JScrollPane scrollPane;
     JTable table;
-    JPanel rightPanel;
     JButton add, remove, upload, help;
-    String rowData [][];
-    String filenames[];
+    //String rowData [][];
+    //String filenames[];
     TableData tabledata;
     TableColumn sizeColumn;
     //FileUploader fu;
-    File [] file;
+    File [] files;
     JLabel progCompletion;
     JProgressBar progBar;
     int sentBytes;
-    int fileSize[];
+    //int fileSize[];
     int totalBytes;
     Font font;
     String destination;
@@ -47,7 +46,7 @@ public class Main extends JApplet implements MouseListener {
     public void init() {
 
         // First thing, output the version, for debugging purposes.
-        System.out.println("Postlet version: 0.6.5 - 16.02.2006");
+        System.out.println("Postlet version: 0.6.6 - 21.02.2006");
 
         // Set the lanuage.
         if (getParameter("language")==null)
@@ -127,13 +126,13 @@ public class Main extends JApplet implements MouseListener {
             table.setBackground(backgroundColour);
             //table.getTableHeader().setForeground(columnHeadColour); // This method is not available to Java 3!
         }
-        scrollPane = new JScrollPane(table);
+        JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         // Add the scroll pane/table to the main pane
         pane.add(scrollPane, BorderLayout.CENTER);
 
-        rightPanel = new JPanel(new GridLayout(4,1,10,10));
+        JPanel rightPanel = new JPanel(new GridLayout(4,1,10,10));
         rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         add = new JButton(pLabels.getLabel(6));
@@ -188,27 +187,27 @@ public class Main extends JApplet implements MouseListener {
 
     public void removeClick() {
         if(table.getSelectedRowCount()>0) {
-            File [] fileTemp = new File[file.length-table.getSelectedRowCount()];
+            File [] fileTemp = new File[files.length-table.getSelectedRowCount()];
             int k=0;
-            for(int i=0; i<file.length-table.getSelectedRowCount(); i++) {
+            for(int i=0; i<files.length-table.getSelectedRowCount(); i++) {
                 for(int j=0; j<table.getSelectedRowCount(); j++) {
                     if(i==table.getSelectedRows()[j]) {
                         k++;
                     }
-                    fileTemp[i] = file[i+k];
+                    fileTemp[i] = files[i+k];
                 }
             }
-            file = fileTemp;
+            files = fileTemp;
             tableUpdate();
         }
-        if (file.length==0) {
+        if (files.length==0) {
             upload.setEnabled(false);
             remove.setEnabled(false);
         }
     }
     
     public void uploadClick() {
-        if(filenames !=null) {
+        if(files.length>0) {
             try {
                 if (getParameter("warnMessage").toLowerCase() == "true"){
                     JOptionPane.showMessageDialog(null, pLabels.getLabel(11), pLabels.getLabel(12), JOptionPane.INFORMATION_MESSAGE);
@@ -223,7 +222,7 @@ public class Main extends JApplet implements MouseListener {
             sentBytes = 0;
             progBar.setMaximum(totalBytes);
             progBar.setMinimum(0);
-            Upload u = new Upload(filenames, fileSize, this, destination);
+            UploadManager u = new UploadManager(files, this, destination);
             u.start();
         }
     }
@@ -247,18 +246,18 @@ public class Main extends JApplet implements MouseListener {
     
     public void tableUpdate() {
         totalBytes = 0;
-        filenames = new String[file.length];
-        fileSize = new int[file.length];
-        for(int i=0; i<file.length; i++) {
-            filenames[i] = file[i].getAbsolutePath();
-            fileSize[i] = (int)file[i].length();
-            totalBytes += (int)file[i].length();
+        String [] filenames = new String[files.length];
+        int [] fileSize = new int[files.length];
+        for(int i=0; i<files.length; i++) {
+            filenames[i] = files[i].getAbsolutePath();
+            fileSize[i] = (int)files[i].length();
+            totalBytes += (int)files[i].length();
         }
         int i=0;
-        rowData = new String[255][2];
-        while(i<file.length) {
-            rowData[i][0] = file[i].getName();
-            rowData[i][1] = ""+file[i].length();
+        String [][] rowData = new String[255][2];
+        while(i<files.length) {
+            rowData[i][0] = files[i].getName();
+            rowData[i][1] = ""+files[i].length();
             i++;
         }
         tabledata.formatTable(rowData,i);
@@ -302,20 +301,20 @@ public class Main extends JApplet implements MouseListener {
                 else
                     filesForUpload.add(tempFiles[i]);
             }
-            if (file == null){
-                file = new File[0];
+            if (files == null){
+                files = new File[0];
             }
-            tempFiles = new File[filesForUpload.size()+file.length];
-            System.out.println("Length of files is: "+filesForUpload.size()+file.length);
-            for (int i=0; i<file.length; i++)
-                tempFiles[i] = file[i];
+            tempFiles = new File[filesForUpload.size()+files.length];
+            for (int i=0; i<files.length; i++)
+                tempFiles[i] = files[i];
             for (int i=0; i<filesForUpload.size(); i++){
-                tempFiles[i+file.length] = (File)filesForUpload.elementAt(i);
+                tempFiles[i+files.length] = (File)filesForUpload.elementAt(i);
             }
-            file = tempFiles;
+            files = tempFiles;
+            System.out.println("Number of files is: '"+files.length+"'");
             tableUpdate();
         }
-        if (file != null && file.length>0) {
+        if (files != null && files.length>0) {
             upload.setEnabled(true);
             remove.setEnabled(true);
         }
