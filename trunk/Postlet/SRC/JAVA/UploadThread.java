@@ -81,7 +81,7 @@ public class UploadThread extends Thread{
         }
     }
 
-    private void uploadFile() throws FileNotFoundException, IOException{
+    private synchronized void uploadFile() throws FileNotFoundException, IOException{
         //try {
             this.setBoundary(40);
             this.setHeaderAndFooter();
@@ -103,7 +103,7 @@ public class UploadThread extends Thread{
             ReadLine rl = new ReadLine(input);
             rl.start();
             try {
-                sleep(2000);
+                wait(2000);
             }
             catch (InterruptedException ie){
                 // Thread was interuppted, which means there was probably
@@ -112,6 +112,7 @@ public class UploadThread extends Thread{
             }
             output.writeBytes(afterContent);
             // Debug: Show that the above has passed!
+            System.out.println(rl.getRead());
             System.out.println("Finished reading input.  Now outputing file");
 
             // Following reads the file, and streams it.
@@ -148,14 +149,14 @@ public class UploadThread extends Thread{
             output.flush();
 
             try {
-                sleep(2000);
+                wait(2000);
             }
             catch (InterruptedException ie){
                 // Thread was interuppted, which means there was probably
                 // some output!
                 System.out.println("Thread was interuppted");
             }
-            System.out.println(rl.getRead());
+            reply = rl.getRead();
             // Close the socket and streams.
             input.close();
             output.close();
