@@ -14,7 +14,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
 
-import java.io.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedOutputStream;
@@ -33,67 +32,59 @@ import java.io.FileNotFoundException;
 public class UploadThread extends Thread{
 
     private File file;
-    private String scriptURL;
     private Main main;
-    private int i;
-
-
+    private int attempts;
     private static final String lotsHyphens="---------------------------";
     private static final String lineEnd="\n";
     private String header, footer, request, reply, afterContent;
+    //private String scriptUrl;
     private URL url;
     private String boundary;
+    private Socket sock;
 
-    public UploadThread(String s, File f, Main m) {
+    public UploadThread(URL u, File f, Main m) throws IOException, UnknownHostException{
 
+        url = u;
         file = f;
-        scriptURL = s;
         main = m;
-        i = 0;
+        attempts = 0;
+        sock = getSocket();
     }
 
     public void run(){
         try {
             upload();
         }
-        catch (java.net.UnknownHostException uhe){;}
-        catch (java.net.MalformedURLException mue){;}
-        catch (java.io.FileNotFoundException fnfe){
+        catch (FileNotFoundException fnfe) {
             // A file has been moved or deleted. This file will NOT
             // be uploaded.
-
         }
+        catch (IOException ioe){;}
     }
 
-    private void upload() throws java.net.MalformedURLException, java.net.UnknownHostException, java.io.FileNotFoundException{
+    private void upload() throws FileNotFoundException, IOException{
 
-        url = new URL(scriptURL);
         this.uploadFile();
         System.out.println("***"+reply+"***");
         if (reply != null && reply.indexOf("FILEFAILED")>=0) {
             if (reply.indexOf("FILETOOBIG")<0){
-                if (i<3) {
+                if (attempts<3) {
                     main.setProgress(-(int)file.length());
                     System.out.println("Error, retrying file \""+file.getName()+"\"");
-                    i++;
+                    attempts++;
                     this.upload();
                 }
             } else {
                 System.out.println("The file is too large");
-                i = 5;
+                attempts = 5;
             }
         }
     }
 
-    // Throw the host exception as will be handled in the same way as the
-    // malformed URL exception (this will stop all threads, as will affect
-    // all files).
-    private void uploadFile() throws UnknownHostException{
-        
-        try {
+    private void uploadFile() throws FileNotFoundException, IOException{
+        //try {
             this.setBoundary(40);
             this.setHeaderAndFooter();
-            Socket sock = getSocket();
 
             // Output stream, for writing to the socket.
             DataOutputStream output = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
@@ -107,88 +98,80 @@ public class UploadThread extends Thread{
 
 
             output.flush();
-            // Read the reply
-            // OK OK, don't bother reading the reply yet, I'll get round to changing this.
-            // just send the post request.
-            try {
-                sleep(1000);
-            }
-            catch (java.lang.InterruptedException ie){;}
-            // Read the reply
-            String line="";
-            while ((line = input.readLine())!=null){
-                if (line.equalsIgnoreCase(lineEnd))
-                    break;
-                System.out.println(line);
-            }
 
-            System.out.println("Finished reading input.  Now outputing file");
-            
-            //output = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
+            // Create a ReadLine thread to read the possible output.
+            ReadLine rl = new ReadLine(input);
+            rl.start();
+            try {
+                sleep(2000);
+            }
+            catch (InterruptedException ie){
+                // Thread was interuppted, which means there was probably
+                // some output!
+                System.out.println("Thread was interuppted");
+            }
             output.writeBytes(afterContent);
+            // Debug: Show that the above has passed!
+            System.out.println("Finished reading input.  Now outputing file");
+
+            // Following reads the file, and streams it.
+            /////////////////////////////////////////////////////////////             
+            FileInputStream fileStream = new FileInputStream(file);
+            int numBytes = 0;
+
+            if (file.length()>Integer.MAX_VALUE){
+                throw new IOException("File is too large for upload");
+            }
+
+            // Size of buffer - May need reducing if users encounter
+            // memory issues.
+            int maxBufferSize = 1024*256;
+            int bytesAvailable = fileStream.available();
+            System.out.println("File available: "+bytesAvailable);
+            int bufferSize = Math.min(bytesAvailable,maxBufferSize);
+
+            byte buffer [] = new byte[bufferSize];
+
+            int bytesRead = fileStream.read(buffer, 0, bufferSize);
+            while (bytesRead > 0) 
+            {
+                output.write(buffer, 0, bufferSize);
+                bytesAvailable = fileStream.available();
+                bufferSize = Math.min(bytesAvailable,maxBufferSize);
+    
+                bytesRead = fileStream.read(buffer, 0,  bufferSize);
+            }
+            ///////////////////////////////////////////////////////////
+
+            output.writeBytes(footer);
+
+            output.flush();
 
             try {
-                // Following reads the file, and streams it.
-                /////////////////////////////////////////////////////////////             
-                FileInputStream fileStream = new FileInputStream(file);
-                int numBytes = 0;
-    
-                if (file.length()>Integer.MAX_VALUE){
-                    throw new IOException("File is too large for upload");
-                }
-
-                // Size of buffer - May need reducing if users encounter
-                // memory issues.
-                int maxBufferSize = 1024*256;
-                int bytesAvailable = fileStream.available();
-                System.out.println("File available: "+bytesAvailable);
-                int bufferSize = Math.min(bytesAvailable,maxBufferSize);
-    
-                byte buffer [] = new byte[bufferSize];
-    
-                int bytesRead = fileStream.read(buffer, 0, bufferSize);
-                while (bytesRead > 0) 
-                {
-                    output.write(buffer, 0, bufferSize);
-                    bytesAvailable = fileStream.available();
-                    bufferSize = Math.min(bytesAvailable,maxBufferSize);
-        
-                    bytesRead = fileStream.read(buffer, 0,  bufferSize);
-                }
-                ///////////////////////////////////////////////////////////
-    
-                output.writeBytes(footer);
-    
-                output.flush();
-    
-                // Read the reply
-                reply ="";
-                while ((line = input.readLine())!=null){
-                    reply += line;
-                }
-    
-                // Close the socket and streams.
-                input.close();
-                output.close();
-                sock.close();
-    
-                // Set the progress, that this file has uploaded.
-                main.setProgress((int)file.length());
+                sleep(2000);
             }
-            catch (java.io.FileNotFoundException fnfe){
-                // Output a warning.
-                // Make adjustments to the total length of all the files.
-                // removing this file from the list of files.
+            catch (InterruptedException ie){
+                // Thread was interuppted, which means there was probably
+                // some output!
+                System.out.println("Thread was interuppted");
             }
+            System.out.println(rl.getRead());
+            // Close the socket and streams.
+            input.close();
+            output.close();
+            sock.close();
 
-        } catch(IOException ioe){
+            // Set the progress, that this file has uploaded.
+            main.setProgress((int)file.length());
+        /*}
+        catch(IOException ioe){
             // Some kind of error caught
             System.out.println(ioe.getMessage());
             ioe.printStackTrace(System.out);
-        }
+        }*/
     }
 
-    private Socket getSocket() throws UnknownHostException, IOException{
+    private Socket getSocket() throws IOException, UnknownHostException{
         Socket sock;
         String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
         String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
