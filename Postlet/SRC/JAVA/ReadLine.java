@@ -33,11 +33,10 @@ public class ReadLine extends Thread {
 
         try {
             String line="";
+            String previousLine ="";
             while ((line = input.readLine())!=null){
-                read += ""+line + newLine;
-                System.out.println("*** READ A LINE ***");
-                System.out.println("###"+line+"###");
-                if (line ==""){
+                this.read += ""+line + newLine;
+                if (line.equals(null) || line.equals("")){
                     System.out.println("*** NOTIFYING ALL ***");
                     notifyAll();
                 }
@@ -50,6 +49,6 @@ public class ReadLine extends Thread {
 
     public String getRead(){
 
-        return read;
+        return this.read;
     }
 }
