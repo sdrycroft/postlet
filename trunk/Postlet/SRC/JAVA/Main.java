@@ -46,7 +46,7 @@ public class Main extends JApplet implements MouseListener {
     public void init() {
 
         // First thing, output the version, for debugging purposes.
-        System.out.println("Postlet version: 0.6.6 - 21.02.2006");
+        System.out.println("Postlet version: 0.6.6 - 22.02.2006");
 
         // Set the lanuage.
         if (getParameter("language")==null)
@@ -222,8 +222,12 @@ public class Main extends JApplet implements MouseListener {
             sentBytes = 0;
             progBar.setMaximum(totalBytes);
             progBar.setMinimum(0);
-            UploadManager u = new UploadManager(files, this, destination);
-            u.start();
+            try {
+                UploadManager u = new UploadManager(files, this, destination);
+                u.start();
+            }
+            catch (UnknownHostException uhe){;}
+            catch (MalformedURLException mue){;}
         }
     }
     

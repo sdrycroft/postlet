@@ -16,6 +16,7 @@
 
 import java.io.File;
 import java.net.*;
+import java.io.IOException;
 
 // Note, the upload manager extends Thread so that the GUI is
 // still responsive, and updates.
@@ -23,14 +24,14 @@ public class UploadManager extends Thread {
     
     File [] files;
     Main main;
-    String destination;
+    URL destination;
     private static final int maxThreads = 5;
     
     /** Creates a new instance of Upload */
-    public UploadManager(File [] f, Main m, String d) {
+    public UploadManager(File [] f, Main m, String d) throws MalformedURLException, UnknownHostException{
         files = f;
         main = m;
-        destination = d;
+        destination = new URL(d);
     }
     
     public void run() {
@@ -40,17 +41,21 @@ public class UploadManager extends Thread {
             int j=0;
             while(j<maxThreads && (i+j)<files.length)
             {
-                UploadThread u[] = new UploadThread[files.length];
-                u[i+j] = new UploadThread(destination,files[i+j],  main);
-                u[i+j].start();
                 try{
+                    UploadThread u[] = new UploadThread[files.length];
+                    u[i+j] = new UploadThread(destination,files[i+j],  main);
+                    u[i+j].start();
                     u[i+j].sleep(1000);}
-                catch(InterruptedException ie){System.out.println("### exception");}
+                catch(InterruptedException ie)  {System.out.println("### exception");}
+                catch(UnknownHostException uhe) {System.out.println("### exception3");}
+                catch(IOException ioe)          {System.out.println("### exception2");}
                 j++;
-                
-                
             }
         }
     }
-    
+
+    private void urlFailure(){
+        // Output a message explaining that the URL has failed.
+        // This should stop all the threads!
+    }
 }

@@ -21,36 +21,34 @@ import javax.swing.table.*;
 
 public class TableData extends AbstractTableModel 
 {
-	
-	Vector myTable;  
-  	int colCount;
-        String [] headers = {"Filename","Size - Kb"};
-        int totalFileSize;
-        
-        public TableData(String file, String size){
-            
-            myTable = new Vector();	
-            colCount = 2;            
-            totalFileSize =0;
-            headers[0] = file;
-            headers[1] = size;
-        }
-   
-	public String getColumnName(int i) 
-	{     
-                if(i==1 && totalFileSize !=0)
-                {
-                    double totalFileSizeMB = totalFileSize/ 10485.76;
-                    totalFileSizeMB = (double)Math.round(totalFileSizeMB)/100;
-                    return headers[i]+" ("+totalFileSizeMB+"Mb)";  
-                }
-                else
-                    return headers[i];                    
-        }
-	 
- 	public int getColumnCount()
+    Vector myTable;  
+    int colCount;
+    String [] headers = {"Filename","Size - Kb"};
+    int totalFileSize;
+
+    public TableData(String file, String size){
+
+        myTable = new Vector();	
+        colCount = 2;            
+        totalFileSize =0;
+        headers[0] = file;
+        headers[1] = size;
+    }
+
+    public String getColumnName(int i){
+        if(i==1 && totalFileSize !=0)
         {
-            return colCount; }
+            double totalFileSizeMB = totalFileSize/ 10485.76;
+            totalFileSizeMB = (double)Math.round(totalFileSizeMB)/100;
+            return headers[i]+" ("+totalFileSizeMB+"Mb)";  
+        }
+        else
+            return headers[i];
+    }
+
+    public int getColumnCount(){
+        return colCount; 
+    }
  	
 	public int getRowCount()
         {
