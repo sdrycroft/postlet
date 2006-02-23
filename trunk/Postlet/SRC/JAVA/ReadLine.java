@@ -22,9 +22,11 @@ public class ReadLine extends Thread {
     BufferedReader input;
     String read;
     private static final String newLine = "\n";
+    UploadThread parent;
 
-    public ReadLine (BufferedReader i){
+    public ReadLine (BufferedReader i, UploadThread p){
 
+        parent = p;
         input = i;
         read = "";
     }
@@ -33,17 +35,36 @@ public class ReadLine extends Thread {
 
         try {
             String line="";
-            String previousLine ="";
             while ((line = input.readLine())!=null){
-                this.read += ""+line + newLine;
-                if (line.equals(null) || line.equals("")){
-                    System.out.println("*** NOTIFYING ALL ***");
-                    notifyAll();
+                this.read += line + newLine;
+                if (line.equals("")){
+                    try {
+                        System.out.println("*** NOTIFYING PARENT ***");
+                        parent.notify();
+                    }
+                    catch (IllegalMonitorStateException ime){
+                        // It appears the thread didn't need notifying
+                        // so, lets not worry about it (Timed out).
+                        System.out.println("*** PARENT DIDN'T NEED NOTIFYING ***");
+                        System.out.println("###"+ime.getMessage()+"###");
+                    }
                 }
             }
         }
         catch (IOException ioe){
-            System.out.println("*** IOException ReadLine.java:47 ***");
+            // Likely as a result of the socket being closed.
+            System.out.println("*** IOException: ReadLine (socket closed) ***");
+            // Notify parent (may be waiting).
+            try {
+                System.out.println("*** NOTIFYING PARENT ***");
+                parent.notify();
+            }
+            catch (IllegalMonitorStateException ime){
+                // It appears the thread didn't need notifying
+                // so, lets not worry about it (Timed out).
+                System.out.println("*** PARENT DIDN'T NEED NOTIFYING ***");
+                System.out.println("***"+ime.getMessage()+"***");
+            }
         }
     }
 

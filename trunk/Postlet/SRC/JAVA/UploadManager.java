@@ -44,11 +44,9 @@ public class UploadManager extends Thread {
                 try{
                     UploadThread u[] = new UploadThread[files.length];
                     u[i+j] = new UploadThread(destination,files[i+j],  main);
-                    u[i+j].start();
-                    u[i+j].sleep(1000);}
-                catch(InterruptedException ie)  {System.out.println("### exception");}
-                catch(UnknownHostException uhe) {System.out.println("### exception3");}
-                catch(IOException ioe)          {System.out.println("### exception2");}
+                    u[i+j].start();}
+                catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
+                catch(IOException ioe)          {System.out.println("*** IOException: UploadManager ***");}
                 j++;
             }
         }

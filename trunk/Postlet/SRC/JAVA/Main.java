@@ -46,7 +46,7 @@ public class Main extends JApplet implements MouseListener {
     public void init() {
 
         // First thing, output the version, for debugging purposes.
-        System.out.println("Postlet version: 0.6.6 - 22.02.2006");
+        System.out.println("*** POSTLET VERSION: 0.6.8 - 23/02/06 ***");
 
         // Set the lanuage.
         if (getParameter("language")==null)
@@ -66,14 +66,13 @@ public class Main extends JApplet implements MouseListener {
         try {
             URL dest = new URL(getParameter("destination"));
             destination = getParameter("destination");
-            System.out.println("Destination:"+destination);
         } catch(java.net.MalformedURLException malurlex){
             // Do something here for badly formed destination, which is ESENTIAL.
-            System.out.println("BADLY FORMED DESTINATION");
+            System.out.println("*** BADLY FORMED DESTINATION ***");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         } catch(java.lang.NullPointerException npe){
             // Do something here for the missing destination, which is ESENTIAL.
-            System.out.println("NULL DESTINATION");
+            System.out.println("*** NULL DESTINATION ***");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         }
 
@@ -231,7 +230,7 @@ public class Main extends JApplet implements MouseListener {
         }
     }
     
-    public void setProgress(int a) {
+    public synchronized void setProgress(int a) {
         sentBytes += a;
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
@@ -315,7 +314,7 @@ public class Main extends JApplet implements MouseListener {
                 tempFiles[i+files.length] = (File)filesForUpload.elementAt(i);
             }
             files = tempFiles;
-            System.out.println("Number of files is: '"+files.length+"'");
+            System.out.println("*** NUMBER OF FILES: '"+files.length+"' ***");
             tableUpdate();
         }
         if (files != null && files.length>0) {
@@ -335,7 +334,6 @@ public class Main extends JApplet implements MouseListener {
         if (helpUrl == null){
             helpUrl = "http://www.postlet.com/help/";
         }
-        System.out.println("Help page is:"+helpUrl);
         try {
             getAppletContext().showDocument(new URL(helpUrl), "_blank");
         } catch (MalformedURLException helpexception){
