@@ -46,7 +46,7 @@ public class Main extends JApplet implements MouseListener {
     public void init() {
 
         // First thing, output the version, for debugging purposes.
-        System.out.println("*** POSTLET VERSION: 0.6.8 - 23/02/06 ***");
+        System.out.println("*** POSTLET VERSION: 0.6.9 - 2/3/06 ***");
 
         // Set the lanuage.
         if (getParameter("language")==null)
@@ -282,7 +282,8 @@ public class Main extends JApplet implements MouseListener {
         filter.addExtension("raw");
         filter.addExtension("tif");
         filter.setDescription(pLabels.getLabel(13));
-        chooser.setFileFilter(filter);
+        chooser.addChoosableFileFilter(filter);
+        chooser.setFileFilter(chooser.getAcceptAllFileFilter());
                 
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
