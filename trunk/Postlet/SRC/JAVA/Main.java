@@ -23,31 +23,33 @@ import java.net.*;
 import java.util.Vector;
 
 public class Main extends JApplet implements MouseListener {
-    //JScrollPane scrollPane;
+    
     JTable table;
     JButton add, remove, upload, help;
-    //String rowData [][];
-    //String filenames[];
     TableData tabledata;
     TableColumn sizeColumn;
-    //FileUploader fu;
     File [] files;
     JLabel progCompletion;
     JProgressBar progBar;
-    int sentBytes;
-    //int fileSize[];
-    int totalBytes;
+    int sentBytes,totalBytes;
     Font font;
     String destination;
     URL endpage, helppage;
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     PostletLabels pLabels;
+    boolean javascript;
+    int buttonClicked;
     
     public void init() {
-
         // First thing, output the version, for debugging purposes.
         System.out.println("*** POSTLET VERSION: 0.6.9 - 2/3/06 ***");
 
+        
+        // Set the javascript to false, and start listening for clicks
+        javascript = false;
+        JavascriptListener jsListen = new JavascriptListener(this);
+        buttonClicked = 0; // Default of add click.
+        
         // Set the lanuage.
         if (getParameter("language")==null)
             pLabels = new PostletLabels("EN", null);
@@ -343,6 +345,31 @@ public class Main extends JApplet implements MouseListener {
             JOptionPane.showMessageDialog(null, pLabels.getLabel(14),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         }
         
+    }
+    
+    public void javascriptAddClicked(){
+        
+        // Set a variable so that the listening thread can call the add click method
+        buttonClicked = 0;
+        javascript = true;        
+    }
+    public void javascriptUploadClicked(){
+        
+        // As above
+        buttonClicked = 1;
+        javascript = false;
+    }
+    public boolean getJavascriptStatus(){
+        
+        return javascript;
+    }
+    public void setJavascriptStatus(){
+        
+        javascript = false;
+    }
+    public int getButtonClicked(){
+        
+        return buttonClicked;
     }
     
 // Here for testing purposes
