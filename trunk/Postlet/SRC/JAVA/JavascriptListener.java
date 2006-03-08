@@ -29,7 +29,8 @@ public class JavascriptListener extends Thread{
                      main.addClick();
                  }
                  else if (main.getButtonClicked() == 1){
-                     main.uploadClick();
+                     if (main.isUploadEnabled())
+	                 main.uploadClick();
                  }
              }
              try{
