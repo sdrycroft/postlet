@@ -42,12 +42,13 @@ public class Main extends JApplet implements MouseListener {
     
     public void init() {
         // First thing, output the version, for debugging purposes.
-        System.out.println("*** POSTLET VERSION: 0.6.9 - 2/3/06 ***");
+        System.out.println("*** POSTLET VERSION: 7.0 - 2/3/06 ***");
 
         
         // Set the javascript to false, and start listening for clicks
         javascript = false;
         JavascriptListener jsListen = new JavascriptListener(this);
+        jsListen.start();
         buttonClicked = 0; // Default of add click.
         
         // Set the lanuage.
@@ -357,7 +358,7 @@ public class Main extends JApplet implements MouseListener {
         
         // As above
         buttonClicked = 1;
-        javascript = false;
+        javascript = true;
     }
     public boolean getJavascriptStatus(){
         
@@ -366,6 +367,10 @@ public class Main extends JApplet implements MouseListener {
     public void setJavascriptStatus(){
         
         javascript = false;
+    }
+    public boolean isUploadEnabled(){
+
+	return upload.isEnabled();
     }
     public int getButtonClicked(){
         
