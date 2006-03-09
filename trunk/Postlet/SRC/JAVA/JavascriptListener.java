@@ -37,7 +37,7 @@ public class JavascriptListener extends Thread{
                  sleep(500);
              }
              catch (Throwable t){
-                 t.printStackTrace();
+                ; // Ignore sleep interuption (Likely due to a page refresh.
              }
          }
     }
