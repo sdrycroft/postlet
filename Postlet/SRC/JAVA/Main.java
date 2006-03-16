@@ -137,7 +137,6 @@ public class Main extends JApplet implements MouseListener {
             table.getTableHeader().setBackground(columnHeadColourBack);
             table.getTableHeader().setForeground(columnHeadColourFore);
             table.setBackground(backgroundColour);
-            table.getTableHeader().setForeground(columnHeadColour); // This method is not available to Java 3!
         }
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
@@ -191,11 +190,8 @@ public class Main extends JApplet implements MouseListener {
 
         // If the destination has not been set/isn't a proper URL
         // Then deactivate the buttons.
-        if (destination == null) {
-            remove.setEnabled(false);
+        if (destination == null)
             add.setEnabled(false);
-            upload.setEnabled(false);
-        }
     }
 
     public void removeClick() {
@@ -260,6 +256,10 @@ public class Main extends JApplet implements MouseListener {
                 JSObject win = (JSObject) JSObject.getWindow(this);
                 win.eval("postletFinished();");
             }
+			// Reset the applet
+			files = null;
+			tableUpdate();
+			add.setEnabled(true);
         }
     }
     
