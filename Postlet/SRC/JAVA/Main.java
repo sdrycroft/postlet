@@ -257,7 +257,7 @@ public class Main extends JApplet implements MouseListener {
                 win.eval("postletFinished();");
             }
 			// Reset the applet
-			files = null;
+            files = new File[0];
 			tableUpdate();
 			add.setEnabled(true);
         }
