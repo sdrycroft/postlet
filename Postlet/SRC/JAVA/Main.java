@@ -33,14 +33,13 @@ public class Main extends JApplet implements MouseListener {
     File [] files;
     JLabel progCompletion;
     JProgressBar progBar;
-    int sentBytes,totalBytes;
+    int sentBytes,totalBytes,buttonClicked,red,green,blue;
     Font font;
     String destination;
     URL endpage, helppage;
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     PostletLabels pLabels;
     boolean javascript;
-    int buttonClicked;
 	Integer redInteger, greenInteger, blueInteger;
     
     public void init() {
