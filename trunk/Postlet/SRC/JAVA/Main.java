@@ -22,6 +22,8 @@ import java.awt.event.*;
 import java.net.*;
 import java.util.Vector;
 
+import netscape.javascript.*;
+
 public class Main extends JApplet implements MouseListener {
     
     JTable table;
@@ -42,7 +44,7 @@ public class Main extends JApplet implements MouseListener {
     
     public void init() {
         // First thing, output the version, for debugging purposes.
-        System.out.println("*** POSTLET VERSION: 7.0 - 2/3/06 ***");
+        System.out.println("*** POSTLET VERSION: 7.0 - 16/3/06 ***");
 
         
         // Set the javascript to false, and start listening for clicks
@@ -238,10 +240,14 @@ public class Main extends JApplet implements MouseListener {
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
             progCompletion.setText(pLabels.getLabel(2));
+            // Attempt at calling Javascript after upload is complete.
+            JSObject window = JSObject.getWindow(this);
+            String[] message = { "An alert message" };
+            window.call("alert", message);
+            
             try {
                 endpage = new URL(getParameter("endpage"));
                 getAppletContext().showDocument(endpage);
-                
             } catch(java.net.MalformedURLException malurlex){
                 // Just ignore this error, as it is most likely from the endpage
                 // not being set.
