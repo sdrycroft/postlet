@@ -1,7 +1,7 @@
 #!/bin/sh
-javac -g -d dist -source 1.3 -target 1.3 SRC/JAVA/*.java
+javac -g -d dist -source 1.3 -classpath lib -target 1.3 SRC/JAVA/*.java
 cd dist
-jar cvfm postlet.jar ../SRC/manifest *.class > /dev/null
+jar cvfm postlet.jar ../SRC/manifest *.class ../lib/netscape/javascript/*.class > /dev/null
 rm -rf *.class
 jarsigner postlet.jar tstkey
 rm -rf ../postlet/postlet.jar
