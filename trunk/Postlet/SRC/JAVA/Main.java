@@ -390,7 +390,7 @@ public class Main extends JApplet implements MouseListener {
         
         return buttonClicked;
     }
-        
+    
     public void mouseClicked(MouseEvent e) {
         if(e.getSource()==add && add.isEnabled())           {addClick();}
         if(e.getSource()==upload && upload.isEnabled())     {uploadClick();}
