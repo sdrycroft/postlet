@@ -85,11 +85,11 @@ public class Main extends JApplet implements MouseListener {
         try {
             // Set the background color, which is set by a parameter.
             redInteger = new Integer(getParameter("red"));
-            int red = redInteger.intValue();
+            red = redInteger.intValue();
             greenInteger = new Integer(getParameter("green"));
-            int green = greenInteger.intValue();
+            green = greenInteger.intValue();
             blueInteger = new Integer(getParameter("blue"));
-            int blue = blueInteger.intValue();
+            blue = blueInteger.intValue();
             backgroundColour = new Color(red, green, blue);
         }
         catch(java.lang.NullPointerException npered){;}
