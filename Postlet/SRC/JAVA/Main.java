@@ -41,6 +41,7 @@ public class Main extends JApplet implements MouseListener {
     PostletLabels pLabels;
     boolean javascript;
     int buttonClicked;
+	Integer redInteger, greenInteger, blueInteger;
     
     public void init() {
         // First thing, output the version, for debugging purposes.
@@ -54,11 +55,12 @@ public class Main extends JApplet implements MouseListener {
         buttonClicked = 0; // Default of add click.
         
         // Set the lanuage.
-        if (getParameter("language")==null)
+        if (getParameter("language")==null | getParameter("language")=="")
             pLabels = new PostletLabels("EN", null);
         else
             pLabels = new PostletLabels(getParameter("language"), getCodeBase());
 
+		// Set the look of the applet
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
@@ -83,14 +85,18 @@ public class Main extends JApplet implements MouseListener {
 
         try {
             // Set the background color, which is set by a parameter.
-            Integer redInteger = new Integer(getParameter("red"));
+            redInteger = new Integer(getParameter("red"));
             int red = redInteger.intValue();
-            Integer greenInteger = new Integer(getParameter("green"));
+            greenInteger = new Integer(getParameter("green"));
             int green = greenInteger.intValue();
-            Integer blueInteger = new Integer(getParameter("blue"));
+            blueInteger = new Integer(getParameter("blue"));
             int blue = blueInteger.intValue();
             backgroundColour = new Color(red, green, blue);
+        }
+        catch(java.lang.NullPointerException npered){;}
+        catch(java.lang.NumberFormatException numfe){;}
 
+		try {
             // Set the background colour of the table headers.
             redInteger = new Integer(getParameter("redheaderback"));
             red = redInteger.intValue();
@@ -99,7 +105,11 @@ public class Main extends JApplet implements MouseListener {
             blueInteger = new Integer(getParameter("blueheaderback"));
             blue = blueInteger.intValue();
             columnHeadColourBack = new Color(red, green, blue);
+        }
+        catch(java.lang.NullPointerException npered){;}
+        catch(java.lang.NumberFormatException numfe){;}
 
+		try {
             // Set the foreground colour of the table headers.
             redInteger = new Integer(getParameter("redheader"));
             red = redInteger.intValue();
@@ -128,7 +138,7 @@ public class Main extends JApplet implements MouseListener {
             table.getTableHeader().setBackground(columnHeadColourBack);
             table.getTableHeader().setForeground(columnHeadColourFore);
             table.setBackground(backgroundColour);
-            //table.getTableHeader().setForeground(columnHeadColour); // This method is not available to Java 3!
+            table.getTableHeader().setForeground(columnHeadColour); // This method is not available to Java 3!
         }
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
