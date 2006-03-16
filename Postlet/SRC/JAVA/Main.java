@@ -240,18 +240,16 @@ public class Main extends JApplet implements MouseListener {
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
             progCompletion.setText(pLabels.getLabel(2));
-            // Attempt at calling Javascript after upload is complete.
-            JSObject window = JSObject.getWindow(this);
-            String[] message = { "An alert message" };
-            window.call("alert", message);
-            
             try {
                 endpage = new URL(getParameter("endpage"));
                 getAppletContext().showDocument(endpage);
             } catch(java.net.MalformedURLException malurlex){
                 // Just ignore this error, as it is most likely from the endpage
                 // not being set.
-                System.err.println("Endpage unset or not valid URL ("+getParameter("endpage")+")");
+                System.err.println("Endpage unset or not valid URL, calling JS.");
+                // Attempt at calling Javascript after upload is complete.
+                JSObject win = (JSObject) JSObject.getWindow(this);
+                win.eval("postletFinished();");
             }
         }
     }
