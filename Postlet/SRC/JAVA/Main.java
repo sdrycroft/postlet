@@ -74,11 +74,11 @@ public class Main extends JApplet implements MouseListener {
             destination = getParameter("destination");
         } catch(java.net.MalformedURLException malurlex){
             // Do something here for badly formed destination, which is ESENTIAL.
-            System.out.println("*** BADLY FORMED DESTINATION ***");
+            System.err.println("*** BADLY FORMED DESTINATION ***");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         } catch(java.lang.NullPointerException npe){
             // Do something here for the missing destination, which is ESENTIAL.
-            System.out.println("*** NULL DESTINATION ***");
+            System.err.println("*** NULL DESTINATION ***");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         }
 
@@ -251,15 +251,17 @@ public class Main extends JApplet implements MouseListener {
             } catch(java.net.MalformedURLException malurlex){
                 // Just ignore this error, as it is most likely from the endpage
                 // not being set.
-                System.err.println("Endpage unset or not valid URL, calling JS.");
+                System.err.println("*** Endpage unset or not valid URL, calling JS. ***");
                 // Attempt at calling Javascript after upload is complete.
                 JSObject win = (JSObject) JSObject.getWindow(this);
                 win.eval("postletFinished();");
             }
 			// Reset the applet
+			progBar.setValue(0);
             files = new File[0];
 			tableUpdate();
 			add.setEnabled(true);
+			help.setEnabled(true);
         }
     }
     
@@ -300,7 +302,7 @@ public class Main extends JApplet implements MouseListener {
         filter.setDescription(pLabels.getLabel(13));
         chooser.addChoosableFileFilter(filter);
         chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-                
+
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
         chooser.getSelectedFile();
@@ -355,7 +357,6 @@ public class Main extends JApplet implements MouseListener {
             getAppletContext().showDocument(new URL(helpUrl), "_blank");
         } catch (MalformedURLException helpexception){
             // Show a popup with help instead!
-            System.err.println("Error with help dialog");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(14),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         }
         
@@ -383,27 +384,13 @@ public class Main extends JApplet implements MouseListener {
     }
     public boolean isUploadEnabled(){
 
-	return upload.isEnabled();
+		return upload.isEnabled();
     }
     public int getButtonClicked(){
         
         return buttonClicked;
     }
-    
-// Here for testing purposes
-    public static void main(String args[]) {
-        Frame f = new Frame("Uploader");
-        Main main = new Main();
         
-        main.init();
-        
-        f.add("Center", main);
-        f.pack();
-        f.setSize(600,200);
-        f.setVisible(true);
-    }
-    
-    
     public void mouseClicked(MouseEvent e) {
         if(e.getSource()==add && add.isEnabled())           {addClick();}
         if(e.getSource()==upload && upload.isEnabled())     {uploadClick();}
