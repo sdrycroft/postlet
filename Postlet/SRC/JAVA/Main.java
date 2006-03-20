@@ -14,15 +14,35 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import java.io.*;
-import java.awt.event.*;
-import java.net.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.io.File;
+import java.net.URL;
 import java.util.Vector;
+import javax.swing.BorderFactory;
+import javax.swing.JApplet;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.TableColumn;
+import javax.swing.UIManager;
+import javax.swing.SwingConstants;
 
-import netscape.javascript.*;
+import netscape.javascript.JSObject;
+
+import java.net.UnknownHostException;
+import java.net.MalformedURLException;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class Main extends JApplet implements MouseListener {
     
@@ -44,7 +64,8 @@ public class Main extends JApplet implements MouseListener {
     
     public void init() {
         // First thing, output the version, for debugging purposes.
-        System.out.println("*** POSTLET VERSION: 7.0 - 16/3/06 ***");
+        System.out.println("*** POSTLET VERSION: 7.0 ***");
+        System.out.println("$date: $");
 
         
         // Set the javascript to false, and start listening for clicks
