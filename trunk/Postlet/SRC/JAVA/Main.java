@@ -65,7 +65,7 @@ public class Main extends JApplet implements MouseListener {
     public void init() {
         // First thing, output the version, for debugging purposes.
         System.out.println("*** POSTLET VERSION: 7.0 ***");
-        System.out.println("$date: $");
+        System.out.println("$Date$");
 
         
         // Set the javascript to false, and start listening for clicks
