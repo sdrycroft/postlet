@@ -1,3 +1,7 @@
+/*
+ * $Id$
+ */
+
 /*  Copyright (C) 2005 Simon David Rycroft
 
     This program is free software; you can redistribute it and/or
@@ -65,9 +69,9 @@ public class Main extends JApplet implements MouseListener {
     public void init() {
         // First thing, output the version, for debugging purposes.
         System.out.println("*** POSTLET VERSION: 7.0 ***");
-        System.out.println("$Date$");
+        String date = "$Date$";
+        System.out.println("***"+date.substring(6,date.length()-1)+"***");
 
-        
         // Set the javascript to false, and start listening for clicks
         javascript = false;
         JavascriptListener jsListen = new JavascriptListener(this);
