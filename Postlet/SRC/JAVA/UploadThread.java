@@ -72,17 +72,14 @@ public class UploadThread extends Thread{
 	private void upload() throws FileNotFoundException, IOException{
 
 		this.uploadFile();
-		System.out.println("*** REPLY: "+reply+" ***");
 		if (reply != null && reply.indexOf("FILEFAILED")>=0) {
 			if (reply.indexOf("FILETOOBIG")<0){
 				if (attempts<3) {
 					main.setProgress(-(int)file.length());
-					System.out.println("*** ERROR, Retrying file \""+file.getName()+"\" ***");
 					attempts++;
 					this.upload();
 				}
 			} else {
-				System.out.println("*** SERVER SAYS FILE IS TOO BIG ***");
 				attempts = 5;
 			}
 		}
@@ -92,7 +89,6 @@ public class UploadThread extends Thread{
 
 		this.setBoundary(40);
 		this.setHeaderAndFooter();
-
 		// Output stream, for writing to the socket.
 		DataOutputStream output = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 		// Reader for accepting the reply from the server.
@@ -114,11 +110,9 @@ public class UploadThread extends Thread{
 		catch (InterruptedException ie){
 			// Thread was interuppted, which means there was probably
 			// some output!
-			System.out.println("*** THREAD INTERUPTED ***");
 		}
 		output.writeBytes(afterContent);
 		// Debug: Show that the above has passed!
-		System.out.println("*** READ: "+rl.getRead()+"***");
 
 		// Following reads the file, and streams it.
 		/////////////////////////////////////////////////////////////
@@ -164,7 +158,6 @@ public class UploadThread extends Thread{
 		catch (InterruptedException ie){
 			// Thread was interuppted, which means there was probably
 			// some output!
-			System.out.println("*** THREAD INTREUPTED ***");
 		}
 		reply = rl.getRead();
 		// Close the socket and streams.
@@ -196,9 +189,9 @@ public class UploadThread extends Thread{
 		}
 		else{
 			// Show when a Proxy is being user.
-			System.out.println("*** PROXY HOST: "+proxyHost+" ***");
-			System.out.println("*** PROXY PORT: "+proxyPort+" ***");
-			System.out.println("*** PROXY TYPE: "+proxyType+" ***");
+			System.out.println("PROXY HOST: "+proxyHost);
+			System.out.println("PROXY PORT: "+proxyPort);
+			System.out.println("PROXY TYPE: "+proxyType);
 			try {
 				s = new Socket(proxyHost,Integer.parseInt(proxyPort));}
 			catch (NumberFormatException badPort){
@@ -265,7 +258,6 @@ public class UploadThread extends Thread{
 		// Add the cookie if it is set in the browser
 		String cookie = main.getCookie();
 		if (cookie.length()>0){
-			System.out.println("*** COOKIE IS SET ***");
 			header +="Cookie: "+cookie+lineEnd;
 		}
 

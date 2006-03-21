@@ -25,7 +25,7 @@ public class UploadManager extends Thread {
 	File [] files;
 	Main main;
 	URL destination;
-	private static final int maxThreads = 5;
+	private int maxThreads = 5;
 	
 	/** Creates a new instance of Upload */
 	public UploadManager(File [] f, Main m, String d) throws MalformedURLException, UnknownHostException{
@@ -34,7 +34,22 @@ public class UploadManager extends Thread {
 		destination = new URL(d);
 	}
 	
+	public UploadManager(File [] f, Main m, String d, int max) throws MalformedURLException, UnknownHostException{
+		try {
+			if (max>5 || max < 1)
+				max = 5;
+			maxThreads = max;
+		}
+		catch (NullPointerException npe){
+			maxThreads = 5;// Leave the maxThreads as default
+		}
+		files = f;
+		main = m;
+		destination = new URL(d);
+	}
+	
 	public void run() {
+		UploadThread u[] = new UploadThread[files.length];
 		for(int i=0; i<files.length; i+=maxThreads) {
 			//UploadThread u = new UploadThread(destination,files[i], main);
 			//u.upload();
@@ -42,13 +57,14 @@ public class UploadManager extends Thread {
 			while(j<maxThreads && (i+j)<files.length)
 			{
 				try{
-					UploadThread u[] = new UploadThread[files.length];
 					u[i+j] = new UploadThread(destination,files[i+j],  main);
 					u[i+j].start();}
 				catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
 				catch(IOException ioe)		  {System.out.println("*** IOException: UploadManager ***");}
 				j++;
 			}
+			// wait for the last one to started to finish (means there may be others running still FIXME!
+			while(u[i+j-1].isAlive()){;}
 		}
 	}
 

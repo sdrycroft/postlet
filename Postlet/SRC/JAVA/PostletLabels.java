@@ -203,7 +203,6 @@ public class PostletLabels {
 
 	/** Creates a new instance of PostletLabels */
 	public PostletLabels(String l, URL codeBase) {
-		System.out.println(l);
 		boolean languageIncluded = false;
 		for (int i=0; i<languages.length; i++){
 			if (languages[i][0].equalsIgnoreCase(l)){
@@ -233,8 +232,7 @@ public class PostletLabels {
 		}
 		catch (FileNotFoundException fnf){
 			// File not found, default used instead.
-			language = languages[0];
-			System.out.println("Language file not found, using English as default.");	   
+			language = languages[0];	   
 		}
 		catch (IOException ioe){
 			// File probably too short.
