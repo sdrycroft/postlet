@@ -68,7 +68,7 @@ public class Main extends JApplet implements MouseListener {
 	
 	public void init() {
 		// First thing, output the version, for debugging purposes.
-		System.out.println("*** POSTLET VERSION: 7.0 ***");
+		System.out.println("*** POSTLET VERSION: 0.8.0 ***");
 		String date = "$Date$";
 		System.out.println("***"+date.substring(6,date.length()-1)+"***");
 
