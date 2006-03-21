@@ -12,4 +12,4 @@ zip -q -r postlet-src.zip postlet-src/SRC/JAVA/*.java postlet-src/dist postlet-s
 sshfs sdrycroft@shell.sourceforge.net:/home/groups/p/po/postlet/htdocs ssh_sf/htdocs
 cp dist/postlet.jar ssh_sf/htdocs/example/
 fusermount -u ssh_sf/htdocs
-restartFirefox
+#restartFirefox
