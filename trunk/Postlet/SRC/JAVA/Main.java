@@ -68,9 +68,9 @@ public class Main extends JApplet implements MouseListener {
 	
 	public void init() {
 		// First thing, output the version, for debugging purposes.
-		System.out.println("*** POSTLET VERSION: 0.8.0 ***");
+		System.out.println("POSTLET VERSION: 0.8.0");
 		String date = "$Date$";
-		System.out.println("***"+date.substring(6,date.length()-1)+"***");
+		System.out.println(date.substring(7,date.length()-1));
 
 		// Set the javascript to false, and start listening for clicks
 		javascript = false;
@@ -99,11 +99,9 @@ public class Main extends JApplet implements MouseListener {
 			destination = getParameter("destination");
 		} catch(java.net.MalformedURLException malurlex){
 			// Do something here for badly formed destination, which is ESENTIAL.
-			System.err.println("*** BADLY FORMED DESTINATION ***");
 			JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
 		} catch(java.lang.NullPointerException npe){
 			// Do something here for the missing destination, which is ESENTIAL.
-			System.err.println("*** NULL DESTINATION ***");
 			JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
 		}
 
@@ -257,7 +255,19 @@ public class Main extends JApplet implements MouseListener {
 			progBar.setMaximum(totalBytes);
 			progBar.setMinimum(0);
 			try {
-				UploadManager u = new UploadManager(files, this, destination);
+				UploadManager u;
+				try {
+					int maxThreads;
+					Integer maxThreadsInteger = new Integer(getParameter("maxthreads"));
+					maxThreads = maxThreadsInteger.intValue();
+					u = new UploadManager(files, this, destination, maxThreads);
+				}
+				catch(java.lang.NullPointerException npered){
+					u = new UploadManager(files, this, destination);
+				}
+				catch(java.lang.NumberFormatException numfe){
+					u = new UploadManager(files, this, destination);
+				}
 				u.start();
 			}
 			catch (UnknownHostException uhe){;}
@@ -275,8 +285,7 @@ public class Main extends JApplet implements MouseListener {
 				getAppletContext().showDocument(endpage);
 			} catch(java.net.MalformedURLException malurlex){
 				// Just ignore this error, as it is most likely from the endpage
-				// not being set.
-				System.err.println("*** Endpage unset or not valid URL, calling JS. ***");
+				// not being set.				
 				// Attempt at calling Javascript after upload is complete.
 				JSObject win = (JSObject) JSObject.getWindow(this);
 				win.eval("postletFinished();");
@@ -358,7 +367,6 @@ public class Main extends JApplet implements MouseListener {
 				tempFiles[i+files.length] = (File)filesForUpload.elementAt(i);
 			}
 			files = tempFiles;
-			System.out.println("*** NUMBER OF FILES: '"+files.length+"' ***");
 			tableUpdate();
 		}
 		if (files != null && files.length>0) {

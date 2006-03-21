@@ -39,31 +39,24 @@ public class ReadLine extends Thread {
 				this.read += line + newLine;
 				if (line.equals("")){
 					try {
-						System.out.println("*** NOTIFYING PARENT ***");
 						parent.notify();
 					}
 					catch (IllegalMonitorStateException ime){
 						// It appears the thread didn't need notifying
 						// so, lets not worry about it (Timed out).
-						System.out.println("*** PARENT DIDN'T NEED NOTIFYING ***");
-						System.out.println("###"+ime.getMessage()+"###");
 					}
 				}
 			}
 		}
 		catch (IOException ioe){
 			// Likely as a result of the socket being closed.
-			System.out.println("*** IOException: ReadLine (socket closed) ***");
 			// Notify parent (may be waiting).
 			try {
-				System.out.println("*** NOTIFYING PARENT ***");
 				parent.notify();
 			}
 			catch (IllegalMonitorStateException ime){
 				// It appears the thread didn't need notifying
 				// so, lets not worry about it (Timed out).
-				System.out.println("*** PARENT DIDN'T NEED NOTIFYING ***");
-				System.out.println("***"+ime.getMessage()+"***");
 			}
 		}
 	}
