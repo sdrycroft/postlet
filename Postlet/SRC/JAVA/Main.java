@@ -90,8 +90,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         jsListen.start();
         buttonClicked = 0; // Default of add click.
         
-        pLabels = new PostletLabels(language, getCodeBase());
         getParameters();
+        pLabels = new PostletLabels(language, getCodeBase());
         layoutGui();
         
     }
