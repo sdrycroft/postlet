@@ -194,6 +194,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         /*  LANGUAGE */
         try {
             language = getParameter("language");
+            if (language == "")
+                language = "EN";
         } catch (NullPointerException nullLang){
             // Default language being set
             language = "EN";
