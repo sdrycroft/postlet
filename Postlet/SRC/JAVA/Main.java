@@ -21,6 +21,13 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+
+import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTarget;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.Font;
@@ -48,7 +55,7 @@ import java.net.UnknownHostException;
 import java.net.MalformedURLException;
 import javax.swing.UnsupportedLookAndFeelException;
 
-public class Main extends JApplet implements MouseListener {
+public class Main extends JApplet implements MouseListener, DropTargetListener {
 	
 	JTable table;
 	JButton add, remove, upload, help;
@@ -147,6 +154,16 @@ public class Main extends JApplet implements MouseListener {
 
 		// Get the main pane to add content to.
 		Container pane = getContentPane();
+		
+		// Attempt to add drop listener to the whole applet
+		try {
+			DropTarget dt = new DropTarget();
+			dt.addDropTargetListener(this);
+			pane.setDropTarget(dt);
+		}
+		catch (java.util.TooManyListenersException tmle){
+			;
+		}
 
 		// Table for the adding of Filenames and sizes to.
 		tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
@@ -439,6 +456,30 @@ public class Main extends JApplet implements MouseListener {
 		if(e.getSource()==remove && remove.isEnabled())	 {removeClick();}
 		if(e.getSource()==help && help.isEnabled())		 {helpClick();}
 	}
+	
+	public void drop(DropTargetDropEvent dtde) {
+		java.awt.datatransfer.DataFlavor dataFlavour [];
+		dataFlavour = dtde.getCurrentDataFlavors();
+		String mimeType;
+		for (int i=0; i<dataFlavour.length; i++){
+			System.out.println(i+": "+dataFlavour[i].toString());
+			mimeType = dataFlavour[i].getMimeType();
+			System.out.println(i+": "+mimeType);
+			System.out.println(i+": "+dataFlavour[i].getPrimaryType());
+			System.out.println(i+": "+dataFlavour[i].getHumanPresentableName());
+			System.out.println(i+": "+dataFlavour[i].getSubType());
+			if (dataFlavour[i].isFlavorJavaFileListType()){
+				System.out.println("Windows flavour");
+			}
+			else if (mimeType.indexOf("text/uri-list")>=0 && mimeType.indexOf("java.lang.String")>=0){
+				System.out.println("KDE flavour");
+			}
+		}
+	}
+	public void dropActionChanged(DropTargetDragEvent dtde){;} 
+	public void dragOver(DropTargetDragEvent dtde){;} 
+	public void dragExit(DropTargetEvent dte){;} 
+	public void dragEnter(DropTargetDragEvent dtde){;} 
 	
 	public void mouseEntered(MouseEvent e){;}
 	public void mouseExited(MouseEvent e){;}
