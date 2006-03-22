@@ -80,7 +80,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     
     public void init() {
         // First thing, output the version, for debugging purposes.
-        System.out.println("POSTLET VERSION: 0.8.0");
+        System.out.println("POSTLET VERSION: 0.9.0");
         String date = "$Date$";
         System.out.println(date.substring(7,date.length()-1));
         
