@@ -124,6 +124,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         sizeColumn.setMaxWidth(100);
         table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
         if (columnHeadColourBack != null && backgroundColour != null){
+            errorMessage(System.out, "setting the tables colours");
             table.getTableHeader().setBackground(columnHeadColourBack);
             table.getTableHeader().setForeground(columnHeadColourFore);
             table.setBackground(backgroundColour);
@@ -494,6 +495,14 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     public boolean isUploadEnabled(){
         
         return upload.isEnabled();
+    }
+    public boolean isAddEnabled(){
+        
+        return add.isEnabled();
+    }
+    public boolean isRemoveEnabled(){
+        
+        return remove.isEnabled();
     }
     public int getButtonClicked(){
         
