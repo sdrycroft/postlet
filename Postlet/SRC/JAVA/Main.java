@@ -74,7 +74,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     // Parameters
     URL endPageURL, helpPageURL, destinationURL;
     boolean warnMessage, autoUpload;
-    String language,destination,endpage,helppage;
+    String language,endpage,helppage;
     int maxThreads;
     String [] fileExtensions;
     
@@ -336,15 +336,13 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             sentBytes = 0;
             progBar.setMaximum(totalBytes);
             progBar.setMinimum(0);
-            try {
-                UploadManager u;
-                try {
-                    u = new UploadManager(files, this, destination, maxThreads);
-                } catch(java.lang.NullPointerException npered){
-                    u = new UploadManager(files, this, destination);
-                }
-                u.start();
-            } catch (UnknownHostException uhe){;} catch (MalformedURLException mue){;}
+			UploadManager u;
+			try {
+				u = new UploadManager(files, this, destinationURL, maxThreads);
+			} catch(java.lang.NullPointerException npered){
+				u = new UploadManager(files, this, destinationURL);
+			}
+			u.start();)
         }
     }
     

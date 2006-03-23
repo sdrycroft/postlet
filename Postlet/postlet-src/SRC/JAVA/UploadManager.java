@@ -28,13 +28,13 @@ public class UploadManager extends Thread {
 	private int maxThreads = 5;
 	
 	/** Creates a new instance of Upload */
-	public UploadManager(File [] f, Main m, String d) throws MalformedURLException, UnknownHostException{
+	public UploadManager(File [] f, Main m, URL d){
 		files = f;
 		main = m;
-		destination = new URL(d);
+		destination = d;
 	}
 	
-	public UploadManager(File [] f, Main m, String d, int max) throws MalformedURLException, UnknownHostException{
+	public UploadManager(File [] f, Main m, URL d, int max){
 		try {
 			if (max>5 || max < 1)
 				max = 5;
@@ -45,7 +45,7 @@ public class UploadManager extends Thread {
 		}
 		files = f;
 		main = m;
-		destination = new URL(d);
+		destination = d;
 	}
 	
 	public void run() {
