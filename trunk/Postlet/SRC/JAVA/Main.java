@@ -57,21 +57,19 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 public class Main extends JApplet implements MouseListener, DropTargetListener {
     
-    // GUI components
     JTable table;
     JButton add, remove, upload, help;
     TableData tabledata;
     TableColumn sizeColumn;
     File [] files;
     JLabel progCompletion;
+    JProgressBar progBar;
+    int sentBytes,totalBytes,buttonClicked;
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     PostletLabels pLabels;
-    JProgressBar progBar;
-    int sentBytes,totalBytes;
     
     // Boolean set to false when a javascript method is executed
     boolean javascript;
-    int buttonClicked;
     
     // Parameters
     URL endPageURL, helpPageURL, destinationURL;
@@ -80,14 +78,11 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     int maxThreads;
     String [] fileExtensions;
     
-    // Logging output
-    public PrintStream errorLog = System.out;
-    
     public void init() {
         // First thing, output the version, for debugging purposes.
-        errorMessage(errorLog,"POSTLET VERSION: 0.9.0");
+        System.out.println("POSTLET VERSION: 0.9.0");
         String date = "$Date$";
-        errorMessage(errorLog,date.substring(7,date.length()-1));
+        System.out.println(date.substring(7,date.length()-1));
         
         // Set the javascript to false, and start listening for clicks
         javascript = false;
@@ -106,14 +101,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         // Set the look of the applet
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException exc){
-            errorMessage(errorLog,"UnsupportedLookAndFeelException");
-        } catch (IllegalAccessException exc){
-            errorMessage(errorLog,"IllegalAccessException");
-        } catch (ClassNotFoundException exc){
-            errorMessage(errorLog,"ClassNotFoundException");
-        } catch (InstantiationException exc){
-            errorMessage(errorLog,"InstantiationException");}
+        } catch (UnsupportedLookAndFeelException exc){;} catch (IllegalAccessException exc){;} catch (ClassNotFoundException exc){;} catch (InstantiationException exc){;}
         
         // Get the main pane to add content to.
         Container pane = getContentPane();
@@ -124,24 +112,23 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             dt.addDropTargetListener(this);
             pane.setDropTarget(dt);
         } catch (java.util.TooManyListenersException tmle){
-            errorMessage(errorLog, "Too many listeners to drop!");
+            errorMessage(System.out, "Too many listeners to drop!");
         }
         
         // Table for the adding of Filenames and sizes to.
         tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
         table = new JTable(tabledata);
         table.setColumnSelectionAllowed(false);
-        //table.setDragEnabled(false); // This method is not available to Java 1.3!
+        //table.setDragEnabled(false); // This method is not available to Java 3!
         sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
         sizeColumn.setMaxWidth(100);
         table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
-        if (columnHeadColourBack != null){
+        if (columnHeadColourBack != null && backgroundColour != null){
+            errorMessage(System.out, "setting the tables colours");
             table.getTableHeader().setBackground(columnHeadColourBack);
             table.getTableHeader().setForeground(columnHeadColourFore);
-        }
-        if (backgroundColour != null)
             table.setBackground(backgroundColour);
-        
+        }
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         
@@ -208,12 +195,12 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         /*  LANGUAGE */
         try {
             language = getParameter("language");
-            if (language == "")
+            if (language == "" || language == null)
                 language = "EN";
         } catch (NullPointerException nullLang){
             // Default language being set
             language = "EN";
-            errorMessage(errorLog,"language is null");
+            errorMessage(System.out,"language is null");
         }
         
         /*  DESTINATION  */
@@ -221,11 +208,11 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             destinationURL = new URL(getParameter("destination"));
         } catch(java.net.MalformedURLException malurlex){
             // Do something here for badly formed destination, which is ESENTIAL.
-            errorMessage(errorLog, "Badly formed destination:###"+getParameter("destination")+"###");
+            errorMessage(System.out, "Badly formed destination:###"+getParameter("destination")+"###");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(3),pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         } catch(java.lang.NullPointerException npe){
             // Do something here for the missing destination, which is ESENTIAL.
-            errorMessage(errorLog,"destination is null");
+            errorMessage(System.out,"destination is null");
             JOptionPane.showMessageDialog(null, pLabels.getLabel(4), pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
         }
         
@@ -234,9 +221,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             Integer bgci = new Integer(getParameter("backgroundcolour"));
             backgroundColour = new Color(bgci.intValue());
         } catch(NumberFormatException numfe){
-            errorMessage(errorLog, "background colour is not a number:###"+getParameter("backgroundcolour")+"###");
+            errorMessage(System.out, "background colour is not a number:###"+getParameter("backgroundcolour")+"###");
         } catch (NullPointerException nullred){
-            errorMessage(errorLog, "background colour is null");
+            errorMessage(System.out, "background colour is null");
         }
         
         /*  TABLEHEADERFOREGROUND  */
@@ -244,9 +231,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             Integer thfi = new Integer(getParameter("tableheadercolour"));
             columnHeadColourFore = new Color(thfi.intValue());
         } catch(NumberFormatException numfe){
-            errorMessage(errorLog, "table header colour is not a number:###"+getParameter("tableheadcolour")+"###");
+            errorMessage(System.out, "table header colour is not a number:###"+getParameter("tableheadcolour")+"###");
         } catch (NullPointerException nullred){
-            errorMessage(errorLog, "table header colour is null");
+            errorMessage(System.out, "table header colour is null");
         }
         
         /*  TABLEHEADERBACKGROUND  */
@@ -254,16 +241,16 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             Integer thbi = new Integer(getParameter("tableheaderbackgroundcolour"));
             columnHeadColourBack = new Color(thbi.intValue());
         } catch(NumberFormatException numfe){
-            errorMessage(errorLog, "table header back colour is not a number:###"+getParameter("tableheaderbackgroundcolour")+"###");
+            errorMessage(System.out, "table header back colour is not a number:###"+getParameter("tableheaderbackgroundcolour")+"###");
         } catch (NullPointerException nullred){
-            errorMessage(errorLog, "table header back colour is null");
+            errorMessage(System.out, "table header back colour is null");
         }
         
         /*  FILEEXTENSIONS  */
         try {
             fileExtensions = getParameter("fileextensions").split(",");
         } catch(NullPointerException nullfileexts){
-            errorMessage(errorLog, "file extensions is null");
+            errorMessage(System.out, "file extensions is null");
         }
         
         /*  WARNINGMESSAGE  */
@@ -273,7 +260,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             else
                 warnMessage = false;
         } catch(NullPointerException nullwarnmessage){
-            errorMessage(errorLog, "warnmessage is null");
+            errorMessage(System.out, "warnmessage is null");
             warnMessage = false;
         }
         
@@ -284,7 +271,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             else
                 autoUpload = false;
         } catch(NullPointerException nullwarnmessage){
-            errorMessage(errorLog, "autoUpload is null");
+            errorMessage(System.out, "autoUpload is null");
             autoUpload = false;
         }
         
@@ -293,26 +280,26 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             Integer maxts = new Integer(getParameter("maxthreads"));
             maxThreads = maxts.intValue();
         } catch (NullPointerException nullmaxthreads){
-            errorMessage(errorLog, "maxthreads is null");
+            errorMessage(System.out, "maxthreads is null");
         } catch (NumberFormatException nummaxthreads){
-            errorMessage(errorLog, "maxthread is not a number");}
+            errorMessage(System.out, "maxthread is not a number");}
         
         /*  ENDPAGE  */
         try {
             endPageURL = new URL(getParameter("endpage"));
         } catch(java.net.MalformedURLException malurlex){
-            errorMessage(errorLog, "endpage is badly formed:###"+getParameter("endpage")+"###");
+            errorMessage(System.out, "endpage is badly formed:###"+getParameter("endpage")+"###");
         } catch(java.lang.NullPointerException npe){
-            errorMessage(errorLog, "endpage is null");
+            errorMessage(System.out, "endpage is null");
         }
         
         /*  HELPPAGE  */
         try {
             helpPageURL = new URL(getParameter("helppage"));
         } catch(java.net.MalformedURLException malurlex){
-            errorMessage(errorLog, "helppage is badly formed:###"+getParameter("helppage")+"###");
+            errorMessage(System.out, "helppage is badly formed:###"+getParameter("helppage")+"###");
         } catch(java.lang.NullPointerException npe){
-            errorMessage(errorLog, "helppage is null");
+            errorMessage(System.out, "helppage is null");
         }
     }
     
@@ -349,13 +336,13 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             sentBytes = 0;
             progBar.setMaximum(totalBytes);
             progBar.setMinimum(0);
-            UploadManager u;
-            try {
-                u = new UploadManager(files, this, destinationURL, maxThreads);
-            } catch(java.lang.NullPointerException npered){
-                u = new UploadManager(files, this, destinationURL);
-            }
-            u.start();
+			UploadManager u;
+			try {
+				u = new UploadManager(files, this, destinationURL, maxThreads);
+			} catch(java.lang.NullPointerException npered){
+				u = new UploadManager(files, this, destinationURL);
+			}
+			u.start();
         }
     }
     
@@ -410,12 +397,13 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         progBar.setValue(0);
         if (fileExtensions != null){
             UploaderFileFilter filter = new UploaderFileFilter();
-            for (int i=1; i<fileExtensions.length; i++){
+            for (int i=1; i<fileExtensions.length; i++){                
                 filter.addExtension(fileExtensions[i]);
             }
             filter.setDescription(fileExtensions[0]);
             chooser.addChoosableFileFilter(filter);
-        } else {
+        }
+        else {
             chooser.setFileFilter(chooser.getAcceptAllFileFilter());
         }
         
@@ -531,16 +519,16 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         dataFlavour = dtde.getCurrentDataFlavors();
         String mimeType;
         for (int i=0; i<dataFlavour.length; i++){
-            errorMessage(errorLog,i+": "+dataFlavour[i].toString());
+            System.out.println(i+": "+dataFlavour[i].toString());
             mimeType = dataFlavour[i].getMimeType();
-            errorMessage(errorLog,i+": "+mimeType);
-            errorMessage(errorLog,i+": "+dataFlavour[i].getPrimaryType());
-            errorMessage(errorLog,i+": "+dataFlavour[i].getHumanPresentableName());
-            errorMessage(errorLog,i+": "+dataFlavour[i].getSubType());
+            System.out.println(i+": "+mimeType);
+            System.out.println(i+": "+dataFlavour[i].getPrimaryType());
+            System.out.println(i+": "+dataFlavour[i].getHumanPresentableName());
+            System.out.println(i+": "+dataFlavour[i].getSubType());
             if (dataFlavour[i].isFlavorJavaFileListType()){
-                errorMessage(errorLog,"Windows flavour");
+                System.out.println("Windows flavour");
             } else if (mimeType.indexOf("text/uri-list")>=0 && mimeType.indexOf("java.lang.String")>=0){
-                errorMessage(errorLog,"KDE flavour");
+                System.out.println("KDE flavour");
             }
         }
     }
