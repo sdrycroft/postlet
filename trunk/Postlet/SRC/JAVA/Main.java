@@ -224,7 +224,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         try {
             destinationURL = new URL(getParameter("destination"));
 	    // Following line is for testing, and to hard code the applet to postlet.com
-	    destinationURL = new URL("http://www.postlet.com/example/javaUpload.php");
+	    //destinationURL = new URL("http://www.postlet.com/example/javaUpload.php");
         } catch(java.net.MalformedURLException malurlex){
             // Do something here for badly formed destination, which is ESENTIAL.
             errorMessage(System.out, "Badly formed destination:###"+getParameter("destination")+"###");
