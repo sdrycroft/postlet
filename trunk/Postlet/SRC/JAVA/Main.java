@@ -27,13 +27,19 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTarget;
+import java.awt.dnd.DnDConstants;
+import java.awt.datatransfer.*;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.BufferedReader;
 import java.net.URL;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
@@ -78,12 +84,23 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     int maxThreads;
     String [] fileExtensions;
     
+    // URI list flavor (Hack for linux)
+    DataFlavor uriListFlavor;
+    
     public void init() {
         // First thing, output the version, for debugging purposes.
         System.out.println("POSTLET VERSION: 0.9.0");
         String date = "$Date$";
         System.out.println(date.substring(7,date.length()-1));
         
+	// URI list flavor:
+	try {
+		uriListFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+	}
+	catch (ClassNotFoundException cnfe){
+		errorMessage(System.out, "No class found for DataFlavor");
+	}
+	
         // Set the javascript to false, and start listening for clicks
         javascript = false;
         JavascriptListener jsListen = new JavascriptListener(this);
@@ -206,6 +223,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         /*  DESTINATION  */
         try {
             destinationURL = new URL(getParameter("destination"));
+	    // Following line is for testing, and to hard code the applet to postlet.com
+	    destinationURL = new URL("http://www.postlet.com/example/javaUpload.php");
         } catch(java.net.MalformedURLException malurlex){
             // Do something here for badly formed destination, which is ESENTIAL.
             errorMessage(System.out, "Badly formed destination:###"+getParameter("destination")+"###");
@@ -515,22 +534,87 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     }
     
     public void drop(DropTargetDropEvent dtde) {
-        java.awt.datatransfer.DataFlavor dataFlavour [];
-        dataFlavour = dtde.getCurrentDataFlavors();
-        String mimeType;
-        for (int i=0; i<dataFlavour.length; i++){
-            System.out.println(i+": "+dataFlavour[i].toString());
-            mimeType = dataFlavour[i].getMimeType();
-            System.out.println(i+": "+mimeType);
-            System.out.println(i+": "+dataFlavour[i].getPrimaryType());
-            System.out.println(i+": "+dataFlavour[i].getHumanPresentableName());
-            System.out.println(i+": "+dataFlavour[i].getSubType());
-            if (dataFlavour[i].isFlavorJavaFileListType()){
-                System.out.println("Windows flavour");
-            } else if (mimeType.indexOf("text/uri-list")>=0 && mimeType.indexOf("java.lang.String")>=0){
-                System.out.println("KDE flavour");
-            }
-        }
+	    dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+	    Transferable trans = dtde.getTransferable();
+	    try {
+		java.awt.datatransfer.DataFlavor dataFlavour [];
+		dataFlavour = dtde.getCurrentDataFlavors();
+		String mimeType;
+		Vector filesFromDrop = new Vector();
+		boolean filesFound = false;
+		while (!filesFound){
+			for (int i=0; i<dataFlavour.length; i++){/*
+				mimeType = dataFlavour[i].getMimeType();
+				System.out.println(i+": "+dataFlavour[i].toString());
+				System.out.println(i+": "+mimeType);
+				System.out.println(i+": "+dataFlavour[i].getPrimaryType());
+				System.out.println(i+": "+dataFlavour[i].getHumanPresentableName());
+				System.out.println(i+": "+dataFlavour[i].getSubType());*/
+				if (dataFlavour[i].isFlavorJavaFileListType()){
+					// Windows
+					System.out.println("Windows");
+					List listOfFiles = (List)trans.getTransferData(DataFlavor.javaFileListFlavor);
+					Iterator iter = listOfFiles.iterator();
+					while (iter.hasNext()) {
+						File tempFile = (File) iter.next();
+						filesFromDrop.add(tempFile);
+					}
+					filesFound = true;
+				} else if (dataFlavour[i].equals(uriListFlavor)){
+					// Linux
+					BufferedReader in = new BufferedReader(dataFlavour[i].getReaderForText(trans));
+					String line = in.readLine();
+					while(line!=null && line !=""){
+						try {
+							File tempFile = new File(new URI(line));
+							filesFromDrop.add(tempFile);
+						}
+						catch (java.net.URISyntaxException usee){;}
+						catch (java.lang.IllegalArgumentException iae){;}
+						line = in.readLine();
+					}
+					filesFound = true;
+				}
+			}
+		}
+		File [] tempFiles = new File[filesFromDrop.size()];
+		filesFromDrop.copyInto(tempFiles);
+		Vector filesForUpload = new Vector();
+		for (int j=0; j<tempFiles.length; j++){
+			if (tempFiles[j].isDirectory()){
+				File [] subDirFiles = tempFiles[j].listFiles();
+				for (int k = 0; k<subDirFiles.length; k++){
+					if (subDirFiles[k].isFile())
+						filesForUpload.add(subDirFiles[k]);
+				}
+				
+			} else
+			filesForUpload.add(tempFiles[j]);
+		}
+		if (files == null){
+			files = new File[0];
+		}
+		tempFiles = new File[filesForUpload.size()+files.length];
+		for (int j=0; j<files.length; j++)
+			tempFiles[j] = files[j];
+		for (int j=0; j<filesForUpload.size(); j++){
+			tempFiles[j+files.length] = (File)filesForUpload.elementAt(j);
+		}
+		files = tempFiles;
+		tableUpdate();
+		
+		if (files != null && files.length>0) {
+			upload.setEnabled(true);
+			remove.setEnabled(true);
+		}
+		if (files !=null && autoUpload){
+			uploadClick();
+		}
+		
+	    }
+	    catch (java.awt.datatransfer.UnsupportedFlavorException usfe){;}
+	    catch (java.io.IOException ioe){;}
+	    dtde.dropComplete(true);
     }
     public void dropActionChanged(DropTargetDragEvent dtde){;}
     public void dragOver(DropTargetDragEvent dtde){;}
