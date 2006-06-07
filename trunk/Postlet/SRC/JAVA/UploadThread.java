@@ -231,7 +231,9 @@ public class UploadThread extends Thread{
 									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName()+"\""+lineEnd+
 									"Content-Type: application/octet-stream"+lineEnd+lineEnd;
 
-		footer = lineEnd + lineEnd + "--"+ lotsHyphens+boundary+"--";
+		//footer = lineEnd + lineEnd + "--"+ lotsHyphens+boundary+"--";
+		// LineEnd removed as it was adding an extra byte to the uploaded file
+		footer = lineEnd + "--"+ lotsHyphens+boundary+"--";
 
 		// The request includes the absolute URI to the script which will
 		// accept the file upload.  This is perfectly valid, although it is
