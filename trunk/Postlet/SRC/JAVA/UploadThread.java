@@ -52,9 +52,6 @@ public class UploadThread extends Thread{
 		main = m;
 		attempts = 0;
 		sock = getSocket();
-		if (sock == null){
-			System.out.println("Socket is null");
-		}
 	}
 
 	public void run(){

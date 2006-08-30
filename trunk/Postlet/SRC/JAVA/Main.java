@@ -484,9 +484,14 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         
         // Method reads the cookie in from the Browser using the LiveConnect object.
         // May also add an option to set the cookie using an applet parameter FIXME!
-        JSObject win = (JSObject) JSObject.getWindow(this);
-        String cookie = ""+(String)win.eval("document.cookie");
-        return cookie;
+		try {
+			JSObject win = (JSObject) JSObject.getWindow(this);
+			String cookie = ""+(String)win.eval("document.cookie");
+			return cookie;
+		}
+		catch (Exception e){
+			return "";
+		}
     }
     
     public void javascriptAddClicked(){
