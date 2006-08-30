@@ -52,6 +52,9 @@ public class UploadThread extends Thread{
 		main = m;
 		attempts = 0;
 		sock = getSocket();
+		if (sock == null){
+			System.out.println("Socket is null");
+		}
 	}
 
 	public void run(){
@@ -179,62 +182,65 @@ public class UploadThread extends Thread{
 	// to have the UploadManager create the threads, and reuse them
 	// passing them to each of the UploadThreads.
 	private Socket getSocket() throws IOException, UnknownHostException{
-	    if (url.getProtocol()=="https"){
-		
+	    if (url.getProtocol().equalsIgnoreCase("https")){
             // Create a trust manager that does not validate certificate chains
-    TrustManager[] trustAllCerts = new TrustManager[]{
-        new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-            public void checkClientTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {
-            }
-            public void checkServerTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {
-            }
-        }
-    };
-    
-    // Install the all-trusting trust manager
-    try {
-        SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        return sc.getSocketFactory().createSocket(url.getHost(),url.getPort());
-    } catch (Exception e) {
-    }
-	    }
-	    else {
-		Socket s;
-		String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
-		String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
-		String proxyType = System.getProperties().getProperty("deployment.proxy.type");
-		if ( (proxyHost == null || proxyType == null) || 
-				(proxyHost.equalsIgnoreCase("") || proxyType.equalsIgnoreCase("0") || proxyType.equalsIgnoreCase("2") || proxyType.equalsIgnoreCase("-1") )) {
-			if (url.getPort()>0)
-				s = new Socket(url.getHost(),url.getPort());
-			else
-				s = new Socket(url.getHost(),80);
-		}
-		else{
-			// Show when a Proxy is being user.
-			System.out.println("PROXY HOST: "+proxyHost);
-			System.out.println("PROXY PORT: "+proxyPort);
-			System.out.println("PROXY TYPE: "+proxyType);
+			TrustManager[] trustAllCerts = new TrustManager[]{
+				new X509TrustManager() {
+					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+						return null;
+					}
+					public void checkClientTrusted(
+							java.security.cert.X509Certificate[] certs, String authType) {
+					}
+					public void checkServerTrusted(
+							java.security.cert.X509Certificate[] certs, String authType) {
+					}
+				}
+			};
+			// Install the all-trusting trust manager
 			try {
-				s = new Socket(proxyHost,Integer.parseInt(proxyPort));}
-			catch (NumberFormatException badPort){
-				// Probably not a bad idea to try a list of standard Proxy ports
-				// here (8080, 3128 ..), then default to trying the final one.
-				// This could possibly be causing problems, display of an
-				// error message is probably also a good idea.
+				SSLContext sc = SSLContext.getInstance("SSL");
+				sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				int port = url.getPort();
+				if (url.getPort()>0)
+					return sc.getSocketFactory().createSocket(url.getHost(),url.getPort());
+				else
+					return sc.getSocketFactory().createSocket(url.getHost(),443);
+			} 
+			catch (Exception e) {
+			}
+		}
+	    else {
+			Socket s;
+			String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
+			String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
+			String proxyType = System.getProperties().getProperty("deployment.proxy.type");
+			if ( (proxyHost == null || proxyType == null) || 
+					(proxyHost.equalsIgnoreCase("") || proxyType.equalsIgnoreCase("0") || proxyType.equalsIgnoreCase("2") || proxyType.equalsIgnoreCase("-1") )) {
 				if (url.getPort()>0)
 					s = new Socket(url.getHost(),url.getPort());
 				else
 					s = new Socket(url.getHost(),80);
 			}
-		}
-		return s;
+			else{
+				// Show when a Proxy is being user.
+				System.out.println("PROXY HOST: "+proxyHost);
+				System.out.println("PROXY PORT: "+proxyPort);
+				System.out.println("PROXY TYPE: "+proxyType);
+				try {
+					s = new Socket(proxyHost,Integer.parseInt(proxyPort));}
+				catch (NumberFormatException badPort){
+					// Probably not a bad idea to try a list of standard Proxy ports
+					// here (8080, 3128 ..), then default to trying the final one.
+					// This could possibly be causing problems, display of an
+					// error message is probably also a good idea.
+					if (url.getPort()>0)
+						s = new Socket(url.getHost(),url.getPort());
+					else
+						s = new Socket(url.getHost(),80);
+				}
+			}
+			return s;
 	    }
 	    return null;// Add an error here!
 	}
