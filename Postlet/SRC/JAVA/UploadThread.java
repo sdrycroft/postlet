@@ -23,6 +23,9 @@ import java.io.BufferedReader;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Random;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.SSLContext;
 
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -176,6 +179,32 @@ public class UploadThread extends Thread{
 	// to have the UploadManager create the threads, and reuse them
 	// passing them to each of the UploadThreads.
 	private Socket getSocket() throws IOException, UnknownHostException{
+	    if (url.getProtocol()=="https"){
+		
+            // Create a trust manager that does not validate certificate chains
+    TrustManager[] trustAllCerts = new TrustManager[]{
+        new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            public void checkClientTrusted(
+                java.security.cert.X509Certificate[] certs, String authType) {
+            }
+            public void checkServerTrusted(
+                java.security.cert.X509Certificate[] certs, String authType) {
+            }
+        }
+    };
+    
+    // Install the all-trusting trust manager
+    try {
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        return sc.getSocketFactory().createSocket(url.getHost(),url.getPort());
+    } catch (Exception e) {
+    }
+	    }
+	    else {
 		Socket s;
 		String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
 		String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
@@ -206,6 +235,8 @@ public class UploadThread extends Thread{
 			}
 		}
 		return s;
+	    }
+	    return null;// Add an error here!
 	}
 
 	private void setBoundary(int length){
