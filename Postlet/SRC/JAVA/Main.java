@@ -326,7 +326,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         if(table.getSelectedRowCount()>0) {
             File [] fileTemp = new File[files.length-table.getSelectedRowCount()];
             int k=0;
-            for(int i=0; i<files.length-table.getSelectedRowCount(); i++) {
+            for(int i=0; i<=files.length-table.getSelectedRowCount(); i++) {
                 for(int j=0; j<table.getSelectedRowCount(); j++) {
                     if(i==table.getSelectedRows()[j]) {
                         k++;

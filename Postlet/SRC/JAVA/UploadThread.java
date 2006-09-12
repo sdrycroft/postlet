@@ -284,7 +284,7 @@ public class UploadThread extends Thread{
 		header +="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10)" + lineEnd;
 
 		// Expect a 100-Continue message
-		header +="Expect: 100-continue" + lineEnd;
+		// header +="Expect: 100-continue" + lineEnd;
 
 		// Standard accept
 		header +="Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"+ lineEnd;
