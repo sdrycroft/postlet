@@ -38,6 +38,7 @@ import java.io.PrintStream;
 import java.io.BufferedReader;
 import java.net.URL;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -54,7 +55,6 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.UIManager;
 import javax.swing.SwingConstants;
-
 import netscape.javascript.JSObject;
 
 import java.net.UnknownHostException;
@@ -325,15 +325,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     public void removeClick() {
         if(table.getSelectedRowCount()>0) {
             File [] fileTemp = new File[files.length-table.getSelectedRowCount()];
-            int k=0;
-            for(int i=0; i<=files.length-table.getSelectedRowCount(); i++) {
-                for(int j=0; j<table.getSelectedRowCount(); j++) {
-                    if(i==table.getSelectedRows()[j]) {
-                        k++;
-                    }
-                    fileTemp[i] = files[i+k];
-                }
-            }
+			int [] selectedRows = table.getSelectedRows();
+			Arrays.sort(selectedRows);
+			int k=0;
+			for (int i=0; i<files.length;i++){
+				if (Arrays.binarySearch(selectedRows,i)<0){
+					fileTemp[k]=files[i];
+					k++;
+				}
+			}
             files = fileTemp;
             tableUpdate();
         }
