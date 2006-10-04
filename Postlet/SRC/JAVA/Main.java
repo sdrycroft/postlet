@@ -101,7 +101,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		uriListFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
 	}
 	catch (ClassNotFoundException cnfe){
-		errorMessage( "No class found for DataFlavor");
+		errorMessage("No class found for DataFlavor");
 	}
 	
         // Set the javascript to false, and start listening for clicks
