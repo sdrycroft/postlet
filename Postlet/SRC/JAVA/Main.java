@@ -176,8 +176,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         upload.setEnabled(false);
         rightPanel.add(upload);
         
+		help = new JButton(pLabels.getLabel(9));
 		if (helpButton){
-			help = new JButton(pLabels.getLabel(9));
 			help.addMouseListener(this);
 			rightPanel.add(help);
 		}
@@ -393,11 +393,19 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             if (endPageURL != null){
                 getAppletContext().showDocument(endPageURL);
             } else {
-                // Just ignore this error, as it is most likely from the endpage
-                // not being set.
-                // Attempt at calling Javascript after upload is complete.
-                JSObject win = (JSObject) JSObject.getWindow(this);
-                win.eval("postletFinished();");
+				try {
+					// Just ignore this error, as it is most likely from the endpage
+					// not being set.
+					// Attempt at calling Javascript after upload is complete.
+					JSObject win = (JSObject) JSObject.getWindow(this);
+					win.eval("postletFinished();");
+				}
+				catch (netscape.javascript.JSException jse){
+					// Not to worry, just means the end page and a postletFinished
+					// method aren't set. Just finish, and let the web page user
+					// exit the page
+					errorMessage("postletFinished, and End page unset");
+				}
             }
             // Reset the applet
             progBar.setValue(0);
@@ -418,12 +426,14 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             totalBytes += (int)files[i].length();
         }
         int i=0;
-        String [][] rowData = new String[255][2];
+		// FIXME - THIS SEEMS SILLY!********************************************
+        String [][] rowData = new String[files.length][2];
         while(i<files.length) {
             rowData[i][0] = files[i].getName();
             rowData[i][1] = ""+files[i].length();
             i++;
         }
+		// *********************************************************************
         tabledata.formatTable(rowData,i);
         sizeColumn.setMaxWidth(100);
         sizeColumn.setMinWidth(100);
