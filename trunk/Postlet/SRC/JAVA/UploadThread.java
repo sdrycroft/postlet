@@ -38,7 +38,7 @@ public class UploadThread extends Thread{
 	private Main main;
 	private int attempts;
 	private static final String lotsHyphens="---------------------------";
-	private static final String lineEnd="\n";
+	private static final String lineEnd="\r\n";
 	private String header, footer, request, reply, afterContent;
 	//private String scriptUrl;
 	private URL url;
