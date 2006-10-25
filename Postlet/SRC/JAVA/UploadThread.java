@@ -68,6 +68,7 @@ public class UploadThread extends Thread{
 			// No idea what could have caused this, so simply call this.run() again.
 			this.run();
 			// This could end up looping.  Probably need to find out what could cause this.
+			// I guess I could count the number of attempts!
 			System.out.println("*** IOException: UploadThread ***");
 		}
 	}
@@ -267,7 +268,7 @@ public class UploadThread extends Thread{
 
 		//footer = lineEnd + lineEnd + "--"+ lotsHyphens+boundary+"--";
 		// LineEnd removed as it was adding an extra byte to the uploaded file
-		footer = lineEnd + "--"+ lotsHyphens+boundary+"--";
+		footer = lineEnd + "--"+ lotsHyphens+boundary+"--" + lineEnd;
 
 		// The request includes the absolute URI to the script which will
 		// accept the file upload.  This is perfectly valid, although it is
@@ -281,7 +282,10 @@ public class UploadThread extends Thread{
 
 		// Give a  user agent just for completeness.  This could be changed so that
 		// access by the Postlet applet can be logged.
-		header +="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10)" + lineEnd;
+		//header +="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10)" + lineEnd;
+		//Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8)
+		header +="User-Agent: Mozilla/5.0 (Java/Postlet; rv:" + main.postletVersion + ")" + lineEnd;
+		
 
 		// Expect a 100-Continue message
 		// header +="Expect: 100-continue" + lineEnd;
