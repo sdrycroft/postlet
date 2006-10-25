@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Have you put the correct version number in?"
 javac -g -d dist -source 1.3 -target 1.3 SRC/JAVA/*.java lib/netscape/javascript/*.java
 cd dist
 jar cvfm postlet.jar ../SRC/manifest *.class netscape/javascript/*.class > /dev/null

@@ -89,10 +89,13 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     
     // URI list flavor (Hack for linux)
     DataFlavor uriListFlavor;
+	
+	// Postlet Version (Mainly for diagnostics and tracking)
+	public static final String postletVersion = "0.10.1+"; 
     
     public void init() {
         // First thing, output the version, for debugging purposes.
-        System.out.println("POSTLET VERSION: 0.11");
+        System.out.println("POSTLET VERSION: "+postletVersion);
         String date = "$Date$";
         System.out.println(date.substring(7,date.length()-1));
         
