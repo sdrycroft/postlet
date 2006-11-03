@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 
 public class UploadThread extends Thread{
 
@@ -100,7 +101,15 @@ public class UploadThread extends Thread{
 
 		// Write the request, and the header.
 		output.writeBytes(request);
-		output.writeBytes(header);
+		try {
+			output.write(header.getBytes("UTF-8")); }// Write in UTF-8! - May change all
+		catch (UnsupportedEncodingException uee){
+			// Just ignore this error, and instead write out the bytes without
+			// getting as UTF-8!
+			main.errorMessage("Couldn't get header in UTF-8");
+			output.writeBytes(header);
+		}
+				
 		output.flush();
 
 		// Create a ReadLine thread to read the possible output.
