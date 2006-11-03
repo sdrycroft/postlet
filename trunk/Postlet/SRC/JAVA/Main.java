@@ -91,7 +91,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     DataFlavor uriListFlavor;
 	
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.10.1+"; 
+	public static final String postletVersion = "0.10.2"; 
     
     public void init() {
         // First thing, output the version, for debugging purposes.
@@ -303,7 +303,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
                 autoUpload = false;
         } catch(NullPointerException nullwarnmessage){
             errorMessage( "autoUpload is null");
-            autoUpload = true;
+            autoUpload = false;
         }
         
         /*  MAXTHREADS  */
