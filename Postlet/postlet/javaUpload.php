@@ -15,7 +15,7 @@ SHOULD NOT BE USED WITHOUT DOING EITHER OF THE FOLLOWING:
 AS OF POSTLET 0.11, POSTLET READS THE MESSAGES SENT BACK TO IT, AND NOW
 IS AWARE OF WHETHER OR NOT AN UPLOAD HAS BEEN SUCCESSFUL. MORE INFORMATION
 ABOUT THE FORMAT OF REPLY MESSAGES CAN BE FOUND ON THE POSTLET WEBSITE 
-http://www.postlet.com/reply/
+http://www.postlet.com/install/
 */
 
 // Configuration ---------------------------------------------------------------
@@ -24,15 +24,17 @@ http://www.postlet.com/reply/
 // or "c:\php\uploads\"
 // Note, this MUST have the trailing slash.
 $uploaddir = '[PATH TO UPLOAD DIRECTORY]';
-// Whether or not to allow the upload of PHP files
+// Whether or not to allow the upload of specific files
 $allow_or_deny = true;
-$allow_or_deny_method = "deny"; // "allow" or "deny" - deny be default
+// If the above is true, then this states whether the array of files is a list of
+// extensions to ALLOW, or DENY
+$allow_or_deny_method = "deny"; // "allow" or "deny"
 $file_extension_list = array("php","asp","pl");
 // -----------------------------------------------------------------------------
 if ($allow_or_deny){
 	if (($allow_or_deny_method == "allow" && !in_array(strtolower(array_pop(explode('.', $_FILES['userfile']['name']))), $file_extension_list))
-		|| ($allow_or_deny_method != "allow" && in_array(strtolower(array_pop(explode('.', $_FILES['userfile']['name']))), $file_extension_list))){		
-		// Atempt to upload a php file when NOT allowed.
+		|| ($allow_or_deny_method == "deny" && in_array(strtolower(array_pop(explode('.', $_FILES['userfile']['name']))), $file_extension_list))){		
+		// Atempt to upload a file with a specific extension when NOT allowed.
 		// 403 error
 		header("HTTP/1.1 403 Forbidden");
 		echo "POSTLET REPLY\r\n";
