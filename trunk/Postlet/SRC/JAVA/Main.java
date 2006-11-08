@@ -92,7 +92,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     DataFlavor uriListFlavor;
 	
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.10.2+"; 
+	public static final String postletVersion = "0.11"; 
     
     public void init() {
         // First thing, output the version, for debugging purposes.
@@ -402,7 +402,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					File tempFile = (File)failedFiles.elementAt(i);
 					failedFilesString += tempFile.getName()+"\r\n";
 				}
-				JOptionPane.showMessageDialog(null, pLabels.getLabel(16)+failedFilesString,pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, pLabels.getLabel(16)+":"+failedFilesString,pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
 				// Empty the Vector, just incase the Applet is to be used again without reloading the page.
 				failedFiles.clear();
 			}
