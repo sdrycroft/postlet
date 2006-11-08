@@ -37,7 +37,7 @@ public class UploadThread extends Thread{
 
 	private File file;
 	private Main main;
-	private int attempts;
+	private int attempts, finalByteSize;
 	private static final String lotsHyphens="---------------------------";
 	private static final String lineEnd="\r\n";
 	private String header, footer, request, reply, afterContent;
@@ -52,7 +52,6 @@ public class UploadThread extends Thread{
 		file = f;
 		main = m;
 		attempts = 0;
-		sock = getSocket();
 	}
 
 	public void run(){
@@ -77,21 +76,36 @@ public class UploadThread extends Thread{
 	private void upload() throws FileNotFoundException, IOException{
 
 		this.uploadFile();
-		if (reply != null && reply.indexOf("FILEFAILED")>=0) {
-			if (reply.indexOf("FILETOOBIG")<0){
+		// Check to see if the file was uploaded
+		if (reply != null && reply.indexOf("POSTLET:NO")>0) {
+			if (reply.indexOf("POSTLET:RETRY")>0){
+				reply = "";
 				if (attempts<3) {
 					main.setProgress(-(int)file.length());
+					main.setProgress(finalByteSize); // Has to be added after whole file is removed.
 					attempts++;
 					this.upload();
 				}
+				else {
+					main.addFailedFile(file);
+					main.setProgress(finalByteSize);
+				}
 			} else {
 				attempts = 5;
+				main.addFailedFile(file);
+				main.setProgress(finalByteSize);
 			}
+		}
+		else {
+			// Set the progress, that this file has uploaded.
+			main.setProgress(finalByteSize);
 		}
 	}
 
 	private synchronized void uploadFile() throws FileNotFoundException, IOException{
 
+		sock = getSocket();
+		
 		this.setBoundary(40);
 		this.setHeaderAndFooter();
 		// Output stream, for writing to the socket.
@@ -141,7 +155,7 @@ public class UploadThread extends Thread{
 		int maxBufferSize = 1024;
 		int bytesAvailable = fileStream.available();
 		int bufferSize = Math.min(bytesAvailable,maxBufferSize);
-		int finalByteSize = 0;
+		finalByteSize = 0; // Needs to be passed to the upload method!
 
 		byte buffer [] = new byte[bufferSize];
 
@@ -173,14 +187,13 @@ public class UploadThread extends Thread{
 			// some output!
 		}
 		reply = rl.getRead();
+		main.errorMessage("REPLY");
+		main.errorMessage(reply);
+		main.errorMessage("END REPLY");
 		// Close the socket and streams.
 		input.close();
 		output.close();
 		sock.close();
-
-		// Set the progress, that this file has uploaded.
-		//main.setProgress((int)file.length());
-		main.setProgress(finalByteSize);
 	}
 
 	// Each UploadThread gets a new Socket.

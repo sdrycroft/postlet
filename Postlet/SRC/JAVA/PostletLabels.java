@@ -36,7 +36,7 @@ public class PostletLabels {
 	// Current: EN, DE, NL, FR, ES, IT, NO, TU, FI
 	private String [] language;
 
-	private static final int numLabels = 16;
+	private static final int numLabels = 17;
 	
 	private static final String [][] languages = {{
 				"EN",
@@ -55,7 +55,8 @@ public class PostletLabels {
 				"Postlet warning",	  //12
 				"Image files",		  //13
 				"Select file for upload", //14
-				"The help URL provided is not a valid one."},
+				"The help URL provided is not a valid one.",
+				"The following files failed to upload"},
 				{
 				"DE",
 				"Dateiname",//0
@@ -73,7 +74,8 @@ public class PostletLabels {
 				"Postlet Warnung",
 				"Bild-Dateien",
 				"Datei zum hochladen auswählen",
-				"Die angegebene Hilfe-URL ist nicht gültig."},
+				"Die angegebene Hilfe-URL ist nicht gültig.",
+				"The following files failed to upload"},
 				{
 				"NL",
 				"Bestands naam",
@@ -91,7 +93,8 @@ public class PostletLabels {
 				"Postlet waarschuwing",
 				"Plaatjes bestanden",
 				"Selecteer bestand voor upload",
-				"De help URL is niet correct"},
+				"De help URL is niet correct",
+				"The following files failed to upload"},
 				{
 				"FR",
 				"Nom de fichier", //0 
@@ -109,7 +112,8 @@ public class PostletLabels {
 				"Avertissement Postlet", //12 
 				"Fichiers image", //13 
 				"Selectionner les fichiers à envoyer", //14 
-				"L'URL de l'aide fournie n'est pas valide."},
+				"L'URL de l'aide fournie n'est pas valide.",
+				"The following files failed to upload"},
 				{
 				"ES",
 				"Fichero",			 //0
@@ -127,7 +131,8 @@ public class PostletLabels {
 				"Aviso del Postlet",	  //12
 				"Ficheros de imágenes",		  //13
 				"Selecciona los ficheros para subir", //14
-				"La URL de ayuda no es válida."},
+				"La URL de ayuda no es válida.",
+				"The following files failed to upload"},
 				{
 				"IT",
 				"Nome File",//0
@@ -145,7 +150,8 @@ public class PostletLabels {
 				"Avvertimento di Postlet",//12
 				"File immagine",//13
 				"Seleziona il file da trasferire",//14
-				"L'indirizzo dell'help non è valido."},
+				"L'indirizzo dell'help non è valido.",
+				"The following files failed to upload"},
 				{
 				"NO",
 				"Filnavn",
@@ -163,7 +169,8 @@ public class PostletLabels {
 				"Postlet advarsel",
 				"Bildefiler",
 				"Velg fil for opplasting",
-				"Den angitte hjelp URL er ikke gyldig."},
+				"Den angitte hjelp URL er ikke gyldig.",
+				"The following files failed to upload"},
 				{
 				"FI",
 				"Tiedoston nimi",
@@ -181,7 +188,8 @@ public class PostletLabels {
 				"Postlet -varoitus",
 				"Kuvatiedostot",
 				"Valitse tiedosto, jonka aiot ladata",
-				"Help-toiminnon URL-osoitetta ei löydy."},
+				"Help-toiminnon URL-osoitetta ei löydy.",
+				"The following files failed to upload"},
 				{
 				"TU",
 				"Dosya Adý",
@@ -199,7 +207,8 @@ public class PostletLabels {
 				"Postlet uyarýsý",
 				"Resim (imaj) dosyalarý",
 				"Yükleme için dosya seçin",
-				"The help URL provided is not a valid one."}}; //15
+				"The help URL provided is not a valid one.",
+				"The following files failed to upload"}}; //15
 
 	/** Creates a new instance of PostletLabels */
 	public PostletLabels(String l, URL codeBase) {
@@ -237,7 +246,7 @@ public class PostletLabels {
 		catch (IOException ioe){
 			// File probably too short.
 			language = languages[0];
-			System.out.println("Language file possibly too short, please ensure it has 17 lines, terminated by a final carriage return");
+			System.out.println("Language file possibly too short, please ensure it has 18 lines, terminated by a final carriage return");
 		}
 	}
 }

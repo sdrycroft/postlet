@@ -73,6 +73,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     int sentBytes,totalBytes,buttonClicked;
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     PostletLabels pLabels;
+	Vector failedFiles;
 	
 	// Default error PrintStream!
 	PrintStream out = System.out;
@@ -87,11 +88,11 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     int maxThreads;
     String [] fileExtensions;
     
-    // URI list flavor (Hack for linux)
+    // URI list flavor (Hack for linux/KDE)
     DataFlavor uriListFlavor;
 	
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.10.2"; 
+	public static final String postletVersion = "0.10.2+"; 
     
     public void init() {
         // First thing, output the version, for debugging purposes.
@@ -116,6 +117,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         getParameters();
         pLabels = new PostletLabels(language, getCodeBase());
         layoutGui();
+		// Vector of failedFiles
+		failedFiles = new Vector();
         
     }
     
@@ -217,7 +220,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     public void errorMessage(String message){
         out.println("***"+message+"***");
     }
-    
     // Helper method for getting the parameters from the webpage.
     private void getParameters(){
         
@@ -392,6 +394,18 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         sentBytes += a;
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
+			// Upload is complete. Check for failed files.
+			if (failedFiles.size()>0){
+				// There is at least one failed file. Show an error message
+				String failedFilesString = "\r\n";
+				for (int i=0; i<failedFiles.size(); i++){
+					File tempFile = (File)failedFiles.elementAt(i);
+					failedFilesString += tempFile.getName()+"\r\n";
+				}
+				JOptionPane.showMessageDialog(null, pLabels.getLabel(16)+failedFilesString,pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
+				// Empty the Vector, just incase the Applet is to be used again without reloading the page.
+				failedFiles.clear();
+			}
             progCompletion.setText(pLabels.getLabel(2));
             if (endPageURL != null){
                 getAppletContext().showDocument(endPageURL);
@@ -418,6 +432,12 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             help.setEnabled(true);
         }
     }
+    
+	// Adds a file that HASN'T uploaded to an array.  Once uploading is complete,
+	// these can be listed with a popup box.
+	public void addFailedFile(File f){
+		failedFiles.add(f);
+	}
     
     public void tableUpdate() {
         totalBytes = 0;
