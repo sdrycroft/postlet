@@ -92,7 +92,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     DataFlavor uriListFlavor;
 	
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.11+"; 
+	public static final String postletVersion = "0.12"; 
     
     public void init() {
         // First thing, output the version, for debugging purposes.
