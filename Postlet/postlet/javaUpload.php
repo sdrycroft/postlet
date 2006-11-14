@@ -39,7 +39,7 @@ if ($allow_or_deny){
 		header("HTTP/1.1 403 Forbidden");
 		echo "POSTLET REPLY\r\n";
 		echo "POSTLET:NO\r\n";
-		echo "POSTLET:FILE TYPE NOT ALLOWED";
+		echo "POSTLET:FILE TYPE NOT ALLOWED\r\n";
 		echo "POSTLET:ABORT THIS\r\n"; // Postlet should NOT send this file again.
 		echo "END POSTLET REPLY\r\n";
 		exit;

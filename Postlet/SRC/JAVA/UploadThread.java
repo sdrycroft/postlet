@@ -98,6 +98,7 @@ public class UploadThread extends Thread{
 		}
 		else {
 			// Set the progress, that this file has uploaded.
+			main.addUploadedFile(file);
 			main.setProgress(finalByteSize);
 		}
 	}
