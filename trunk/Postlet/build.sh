@@ -10,7 +10,7 @@ cp postlet.jar ../postlet/
 cd ..
 zip -q -r postlet.zip postlet/index.html postlet/javaUpload.php postlet/LICENCE postlet/postlet.jar postlet/README postlet/uploadTest.html
 zip -q -r postlet-src.zip postlet-src/SRC/JAVA/*.java postlet-src/dist postlet-src/build.sh postlet-src/SRC/manifest postlet-src/README postlet-src/README postlet-src/lib
-sshfs sdrycroft@shell.sourceforge.net:/home/groups/p/po/postlet/htdocs ssh_sf/htdocs
-cp dist/postlet.jar ssh_sf/htdocs/cvs/
-fusermount -u ssh_sf/htdocs
+sshfs sdrycroft@shell.sourceforge.net:/home/groups/p/po/postlet/htdocs htdocs
+cp dist/postlet.jar htdocs/cvs/
+fusermount -u htdocs
 #restartFirefox

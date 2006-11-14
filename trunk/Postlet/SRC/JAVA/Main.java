@@ -73,7 +73,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     int sentBytes,totalBytes,buttonClicked;
     Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
     PostletLabels pLabels;
-	Vector failedFiles;
+	Vector failedFiles, uploadedFiles;
 	
 	// Default error PrintStream!
 	PrintStream out = System.out;
@@ -83,7 +83,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     
     // Parameters
     URL endPageURL, helpPageURL, destinationURL;
-    boolean warnMessage, autoUpload, helpButton;
+    boolean warnMessage, autoUpload, helpButton, failedFileMessage;
     String language,endpage,helppage;
     int maxThreads;
     String [] fileExtensions;
@@ -92,7 +92,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
     DataFlavor uriListFlavor;
 	
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.11"; 
+	public static final String postletVersion = "0.11+"; 
     
     public void init() {
         // First thing, output the version, for debugging purposes.
@@ -119,6 +119,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         layoutGui();
 		// Vector of failedFiles
 		failedFiles = new Vector();
+		uploadedFiles = new Vector();
         
     }
     
@@ -345,6 +346,19 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             errorMessage( "helpbutton is null");
             helpButton = false;
         }
+		
+		/* FAILED FILES WARNING */
+		// This should be set to false if failed files are being handled in
+		// javascript
+		try {
+			if (getParameter("failedfilesmessage").toLowerCase().equals("true"))
+				failedFileMessage = true;
+			else
+				failedFileMessage = false;
+		} catch (NullPointerException nullfailedfilemessage){
+			errorMessage( "failedfilemessage is null");
+			failedFileMessage = false;
+		}
     }
     
     public void removeClick() {
@@ -395,7 +409,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
         progBar.setValue(sentBytes);
         if (sentBytes == totalBytes){
 			// Upload is complete. Check for failed files.
-			if (failedFiles.size()>0){
+			if (failedFiles.size()>0 && failedFileMessage){
 				// There is at least one failed file. Show an error message
 				String failedFilesString = "\r\n";
 				for (int i=0; i<failedFiles.size(); i++){
@@ -403,8 +417,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					failedFilesString += tempFile.getName()+"\r\n";
 				}
 				JOptionPane.showMessageDialog(null, pLabels.getLabel(16)+":"+failedFilesString,pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
-				// Empty the Vector, just incase the Applet is to be used again without reloading the page.
-				failedFiles.clear();
 			}
             progCompletion.setText(pLabels.getLabel(2));
             if (endPageURL != null){
@@ -430,6 +442,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
             tableUpdate();
             add.setEnabled(true);
             help.setEnabled(true);
+			failedFiles.clear();
+			uploadedFiles.clear();
         }
     }
     
@@ -437,6 +451,12 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	// these can be listed with a popup box.
 	public void addFailedFile(File f){
 		failedFiles.add(f);
+	}
+	
+	// Adds a file that HAS uploaded to an array.  These are passed along with
+	// failed files to a javascript method.
+	public void addUploadedFile(File f){
+		uploadedFiles.add(f);
 	}
     
     public void tableUpdate() {
@@ -546,6 +566,34 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			return "";
 		}
     }
+	
+	public String [] javascriptGetFailedFiles(){
+		if (failedFiles.size()>0){
+			String [] arrayFailedFiles = new String[failedFiles.size()];
+			for (int i=0; i<failedFiles.size(); i++){
+				File tempFile = (File)failedFiles.elementAt(i);
+				arrayFailedFiles[i] = tempFile.getName();
+			}
+			return arrayFailedFiles;
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public String [] javascriptGetUploadedFiles(){
+		if (uploadedFiles.size()>0){
+			String [] arrayUploadedFiles = new String[uploadedFiles.size()];
+			for (int i=0; i<uploadedFiles.size(); i++){
+				File tempFile = (File)uploadedFiles.elementAt(i);
+				arrayUploadedFiles[i] = tempFile.getName();
+			}
+			return arrayUploadedFiles;
+		}
+		else {
+			return null;
+		}
+	}
     
     public void javascriptAddClicked(){
         
