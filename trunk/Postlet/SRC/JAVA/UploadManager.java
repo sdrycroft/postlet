@@ -21,19 +21,19 @@ import java.io.IOException;
 // Note, the upload manager extends Thread so that the GUI is
 // still responsive, and updates.
 public class UploadManager extends Thread {
-	
+
 	File [] files;
 	Main main;
 	URL destination;
 	private int maxThreads = 5;
-	
+
 	/** Creates a new instance of Upload */
 	public UploadManager(File [] f, Main m, URL d){
 		files = f;
 		main = m;
 		destination = d;
 	}
-	
+
 	public UploadManager(File [] f, Main m, URL d, int max){
 		try {
 			if (max>5 || max < 1)
@@ -47,7 +47,7 @@ public class UploadManager extends Thread {
 		main = m;
 		destination = d;
 	}
-	
+
 	public void run() {
 		UploadThread u[] = new UploadThread[files.length];
 		for(int i=0; i<files.length; i+=maxThreads) {
@@ -57,10 +57,10 @@ public class UploadManager extends Thread {
 			while(j<maxThreads && (i+j)<files.length)
 			{
 				try{
-					u[i+j] = new UploadThread(destination,files[i+j],  main);
+					u[i+j] = new UploadThread(destination,files[i+j], main);
 					u[i+j].start();}
 				catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
-				catch(IOException ioe)		  {System.out.println("*** IOException: UploadManager ***");}
+				catch(IOException ioe)			{System.out.println("*** IOException: UploadManager ***");}
 				j++;
 			}
 			// wait for the last one to started to finish (means there may be others running still FIXME!

@@ -19,17 +19,17 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.table.*;
 
-public class TableData extends AbstractTableModel 
+public class TableData extends AbstractTableModel
 {
-	Vector myTable;  
+	Vector myTable;
 	int colCount;
 	String [] headers = {"Filename","Size - Kb"};
 	int totalFileSize;
 
 	public TableData(String file, String size){
 
-		myTable = new Vector();	
-		colCount = 2;			
+		myTable = new Vector();
+		colCount = 2;
 		totalFileSize =0;
 		headers[0] = file;
 		headers[1] = size;
@@ -40,29 +40,29 @@ public class TableData extends AbstractTableModel
 		{
 			double totalFileSizeMB = totalFileSize/ 10485.76;
 			totalFileSizeMB = (double)Math.round(totalFileSizeMB)/100;
-			return headers[i]+" ("+totalFileSizeMB+"Mb)";  
+			return headers[i]+" ("+totalFileSizeMB+"Mb)";
 		}
 		else
 			return headers[i];
 	}
 
 	public int getColumnCount(){
-		return colCount; 
+		return colCount;
 	}
- 	
+
 	public int getRowCount()
 		{
 			return myTable.size();}
-		
+
 		public int getTotalFileSize()
 		{
 			return totalFileSize;}
-		
+
 	public Object getValueAt(int row, int col)
 		{
 			return ((Object[])myTable.elementAt(row))[col];}
 
-		
+
 	public void formatTable(String [][] data, int dataLength)
 	{
 			totalFileSize =0;
@@ -71,7 +71,7 @@ public class TableData extends AbstractTableModel
 			while (j<dataLength)
 			{
 				Object[] row = new Object[colCount];
-				for (int k=0; k < colCount; k++) 
+				for (int k=0; k < colCount; k++)
 				{
 					if(k==1)
 					{
@@ -82,16 +82,16 @@ public class TableData extends AbstractTableModel
 							double thisFileKb = (double)thisFileSize/10;
 							row[k] = new Double(thisFileKb);}
 						catch(NumberFormatException nfe){;}
-					}						
+					}
 					else
 						row[k] = data[j][k];
-				}	
+				}
 				myTable.addElement(row);
 				j++;
-			}			
-			fireTableChanged(null);		  
+			}
+			fireTableChanged(null);
 		}
 }
- 
 
- 	
+
+
