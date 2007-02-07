@@ -22,7 +22,7 @@ import java.net.URL;
 import java.io.InputStreamReader;
 
 public class PostletLabels {
-	
+
 	// languages listed by their two letter codes (http://www.w3.org/WAI/ER/IG/ert/iso639.htm)
 	// The compiled in languages will be:
 	// English
@@ -37,23 +37,23 @@ public class PostletLabels {
 	private String [] language;
 
 	private static final int numLabels = 17;
-	
+
 	private static final String [][] languages = {{
 				"EN",
-				"Filename",			 //0
-				"File Size",			//1
-				"Finished",			 //2
+				"Filename",			//0
+				"File Size",		//1
+				"Finished",			//2
 				"The destination URL provided is not a valid one.", //3
 				"You have not provided a destination URL.",		 //4
-				"Postlet error",		//5
-				"Add",				  //6
-				"Remove",			   //7
-				"Upload",			   //8
-				"Help",				 //9
-				"Upload progress:",	 //10
+				"Postlet error",	//5
+				"Add",				//6
+				"Remove",			//7
+				"Upload",			//8
+				"Help",				//9
+				"Upload progress:",	//10
 				"Do not close your web browser, or leave this page until upload completes.", //11
-				"Postlet warning",	  //12
-				"Image files",		  //13
+				"Postlet warning",	//12
+				"Image files",		//13
 				"Select file for upload", //14
 				"The help URL provided is not a valid one.",
 				"The following files failed to upload"},
@@ -97,39 +97,39 @@ public class PostletLabels {
 				"The following files failed to upload"},
 				{
 				"FR",
-				"Nom de fichier", //0 
-				"Taille du fichier", //1 
-				"Terminé", //2 
-				"L'URL de destination fournie n'est pas valide.", //3 
-				"Vous n'avez pas fourni d'URL de destination.", //4 
-				"Erreur Postlet", //5 
-				"Ajouter", //6 
-				"Enlever", //7 
-				"Envoyer", //8 
-				"Aide", //9 
-				"Progression de l'envoi:", //10 
-				"Ne fermer pas votre browser et rester sur cette page jusqu'à l'envoi complet des données.", //11 
-				"Avertissement Postlet", //12 
-				"Fichiers image", //13 
-				"Selectionner les fichiers à envoyer", //14 
+				"Nom de fichier", //0
+				"Taille du fichier", //1
+				"Terminé", //2
+				"L'URL de destination fournie n'est pas valide.", //3
+				"Vous n'avez pas fourni d'URL de destination.", //4
+				"Erreur Postlet", //5
+				"Ajouter", //6
+				"Enlever", //7
+				"Envoyer", //8
+				"Aide", //9
+				"Progression de l'envoi:", //10
+				"Ne fermer pas votre browser et rester sur cette page jusqu'à l'envoi complet des données.", //11
+				"Avertissement Postlet", //12
+				"Fichiers image", //13
+				"Selectionner les fichiers à envoyer", //14
 				"L'URL de l'aide fournie n'est pas valide.",
 				"The following files failed to upload"},
 				{
 				"ES",
-				"Fichero",			 //0
+				"Fichero",			//0
 				"Tamaño",			//1
-				"Terminado",			 //2
+				"Terminado",		//2
 				"La URL destino no es válida.", //3
 				"No hay una URL destino especificada.",		 //4
-				"Postlet error",		//5
-				"Añadir",				  //6
-				"Quitar",			   //7
-				"Subir",			   //8
-				"Ayuda",				 //9
+				"Postlet error",	//5
+				"Añadir",			//6
+				"Quitar",			//7
+				"Subir",			//8
+				"Ayuda",			//9
 				"Progreso de la transferencia:",	 //10
 				"No cerrar el navegador o esta ventana hasta que la transferencia haya terminado.", //11
-				"Aviso del Postlet",	  //12
-				"Ficheros de imágenes",		  //13
+				"Aviso del Postlet",//12
+				"Ficheros de imágenes",//13
 				"Selecciona los ficheros para subir", //14
 				"La URL de ayuda no es válida.",
 				"The following files failed to upload"},
@@ -223,7 +223,7 @@ public class PostletLabels {
 		if (!languageIncluded)
 			readUserDefinedLanguageFile(codeBase, l);
 	}
-	
+
 	public String getLabel(int i){
 		if (i >= numLabels)
 			return "ERROR!";
@@ -233,7 +233,7 @@ public class PostletLabels {
 	// jar file), and sets the labels from this.
 	private void readUserDefinedLanguageFile(URL codeBase, String lang){
 		try {
-			URL languageURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+"language_"+lang.toUpperCase().trim());			
+			URL languageURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+"language_"+lang.toUpperCase().trim());
 			BufferedReader in = new BufferedReader(new InputStreamReader(languageURL.openStream()));
 			language = new String [numLabels];
 			for (int i=0; i<numLabels; i++)
@@ -241,7 +241,7 @@ public class PostletLabels {
 		}
 		catch (FileNotFoundException fnf){
 			// File not found, default used instead.
-			language = languages[0];	   
+			language = languages[0];
 		}
 		catch (IOException ioe){
 			// File probably too short.

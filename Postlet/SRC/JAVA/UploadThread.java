@@ -67,7 +67,7 @@ public class UploadThread extends Thread{
 		catch (IOException ioe){
 			// No idea what could have caused this, so simply call this.run() again.
 			this.run();
-			// This could end up looping.  Probably need to find out what could cause this.
+			// This could end up looping. Probably need to find out what could cause this.
 			// I guess I could count the number of attempts!
 			System.out.println("*** IOException: UploadThread ***");
 		}
@@ -106,7 +106,7 @@ public class UploadThread extends Thread{
 	private synchronized void uploadFile() throws FileNotFoundException, IOException{
 
 		sock = getSocket();
-		
+
 		this.setBoundary(40);
 		this.setHeaderAndFooter();
 		// Output stream, for writing to the socket.
@@ -124,7 +124,7 @@ public class UploadThread extends Thread{
 			main.errorMessage("Couldn't get header in UTF-8");
 			output.writeBytes(header);
 		}
-				
+
 		output.flush();
 
 		// Create a ReadLine thread to read the possible output.
@@ -161,16 +161,16 @@ public class UploadThread extends Thread{
 		byte buffer [] = new byte[bufferSize];
 
 		int bytesRead = fileStream.read(buffer, 0, bufferSize);
-		while (bytesAvailable > 0) 
+		while (bytesAvailable > 0)
 		{
 			output.write(buffer, 0, bufferSize);
 			if (bufferSize == maxBufferSize)
 				main.setProgress(bufferSize);
-			else 
+			else
 				finalByteSize = bufferSize;
 			bytesAvailable = fileStream.available();
 			bufferSize = Math.min(bytesAvailable,maxBufferSize);
-			bytesRead = fileStream.read(buffer, 0,  bufferSize);
+			bytesRead = fileStream.read(buffer, 0, bufferSize);
 		}
 		///////////////////////////////////////////////////////////
 
@@ -199,12 +199,12 @@ public class UploadThread extends Thread{
 
 	// Each UploadThread gets a new Socket.
 	// This is bad, especially when talking to HTTP/1.1 servers
-	// which are able to keep a connection alive.  May change this
+	// which are able to keep a connection alive. May change this
 	// to have the UploadManager create the threads, and reuse them
 	// passing them to each of the UploadThreads.
 	private Socket getSocket() throws IOException, UnknownHostException{
-	    if (url.getProtocol().equalsIgnoreCase("https")){
-            // Create a trust manager that does not validate certificate chains
+		if (url.getProtocol().equalsIgnoreCase("https")){
+			// Create a trust manager that does not validate certificate chains
 			TrustManager[] trustAllCerts = new TrustManager[]{
 				new X509TrustManager() {
 					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -227,16 +227,16 @@ public class UploadThread extends Thread{
 					return sc.getSocketFactory().createSocket(url.getHost(),url.getPort());
 				else
 					return sc.getSocketFactory().createSocket(url.getHost(),443);
-			} 
+			}
 			catch (Exception e) {
 			}
 		}
-	    else {
+		else {
 			Socket s;
 			String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
 			String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
 			String proxyType = System.getProperties().getProperty("deployment.proxy.type");
-			if ( (proxyHost == null || proxyType == null) || 
+			if ( (proxyHost == null || proxyType == null) ||
 					(proxyHost.equalsIgnoreCase("") || proxyType.equalsIgnoreCase("0") || proxyType.equalsIgnoreCase("2") || proxyType.equalsIgnoreCase("-1") )) {
 				if (url.getPort()>0)
 					s = new Socket(url.getHost(),url.getPort());
@@ -262,8 +262,8 @@ public class UploadThread extends Thread{
 				}
 			}
 			return s;
-	    }
-	    return null;// Add an error here!
+		}
+		return null;// Add an error here!
 	}
 
 	private void setBoundary(int length){
@@ -283,7 +283,7 @@ public class UploadThread extends Thread{
 		request = new String();
 
 		// AfterContent is what is sent after the Content-Length header field,
-		// but before the file itself.  The length of this, is what is required
+		// but before the file itself. The length of this, is what is required
 		// by the content-length header (along with the length of the file).
 		afterContent = lotsHyphens +"--"+ boundary + lineEnd +
 									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName()+"\""+lineEnd+
@@ -294,7 +294,7 @@ public class UploadThread extends Thread{
 		footer = lineEnd + "--"+ lotsHyphens+boundary+"--" + lineEnd;
 
 		// The request includes the absolute URI to the script which will
-		// accept the file upload.  This is perfectly valid, although it is
+		// accept the file upload. This is perfectly valid, although it is
 		// normally only used by a client when connecting to a proxy server.
 		// COULD CREATE PROBLEMS WITH SOME WEB SERVERS.
 		request="POST " + url.toExternalForm() + " HTTP/1.1" + lineEnd;
@@ -303,12 +303,12 @@ public class UploadThread extends Thread{
 		// a proxy)
 		header +="Host: " + url.getHost() + lineEnd;
 
-		// Give a  user agent just for completeness.  This could be changed so that
+		// Give a user agent just for completeness. This could be changed so that
 		// access by the Postlet applet can be logged.
 		//header +="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10)" + lineEnd;
 		//Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8)
 		header +="User-Agent: Mozilla/5.0 (Java/Postlet; rv:" + main.postletVersion + ")" + lineEnd;
-		
+
 
 		// Expect a 100-Continue message
 		// header +="Expect: 100-continue" + lineEnd;
@@ -317,7 +317,7 @@ public class UploadThread extends Thread{
 		header +="Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"+ lineEnd;
 		header +="Accept-Language: en-us,en;q=0.5" + lineEnd;
 		header +="Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7" + lineEnd;
-		
+
 		// Add the cookie if it is set in the browser
 		String cookie = main.getCookie();
 		if (cookie.length()>0){
