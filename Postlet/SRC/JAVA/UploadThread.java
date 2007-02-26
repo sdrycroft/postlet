@@ -33,6 +33,14 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 
+import java.io.InputStream;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+
 public class UploadThread extends Thread{
 
 	private File file;
@@ -41,10 +49,11 @@ public class UploadThread extends Thread{
 	private static final String lotsHyphens="---------------------------";
 	private static final String lineEnd="\r\n";
 	private String header, footer, request, reply, afterContent;
-	//private String scriptUrl;
+	private InputStream fileStream;
 	private URL url;
 	private String boundary;
 	private Socket sock;
+	private boolean addPngToFileName;
 
 	public UploadThread(URL u, File f, Main m) throws IOException, UnknownHostException{
 
@@ -105,6 +114,10 @@ public class UploadThread extends Thread{
 
 	private synchronized void uploadFile() throws FileNotFoundException, IOException{
 
+		// Get the file stream first, as this is needed for the content-length
+		// header.
+		this.setInputStream();
+		
 		sock = getSocket();
 
 		this.setBoundary(40);
@@ -144,7 +157,7 @@ public class UploadThread extends Thread{
 
 		// Following reads the file, and streams it.
 		/////////////////////////////////////////////////////////////
-		FileInputStream fileStream = new FileInputStream(file);
+		//FileInputStream fileStream = new FileInputStream(file);
 		int numBytes = 0;
 
 		if (file.length()>Integer.MAX_VALUE){
@@ -265,6 +278,61 @@ public class UploadThread extends Thread{
 		}
 		return null;// Add an error here!
 	}
+	
+	private void setInputStream() throws FileNotFoundException{
+		//check	if the file is an image from its extention
+		String fileExt = file.getName();
+		fileExt=fileExt.substring(fileExt.lastIndexOf(".")+1);
+		
+		// If file is an image supported by Java (Currently only JPEG, GIF and PNG)
+		if((fileExt.equalsIgnoreCase("gif")
+			||fileExt.equalsIgnoreCase("jpg")
+			||fileExt.equalsIgnoreCase("jpeg")
+			||fileExt.equalsIgnoreCase("png")) && main.getMaxPixels()>0){
+			try	{
+				BufferedImage buf=ImageIO.read(file);
+				int currentPixels = buf.getWidth()*buf.getHeight();
+				int maxPixels = main.getMaxPixels();				
+				if	(currentPixels>maxPixels){
+					double reduceBy = Math.sqrt(maxPixels)/Math.sqrt(currentPixels);
+					int	newWidth=(int)Math.round(buf.getWidth()*reduceBy);
+					int	newHeigth=(int)Math.round(buf.getHeight()*reduceBy);							   
+					BufferedImage bufFinal=new BufferedImage(newWidth,newHeigth,BufferedImage.TYPE_INT_RGB);
+					Graphics2D g=(Graphics2D)bufFinal.getGraphics();
+					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+					g.drawImage(buf,0,0,newWidth,newHeigth,null);
+					g.dispose();
+					ByteArrayOutputStream baos=new ByteArrayOutputStream();
+					if	(fileExt.equalsIgnoreCase("jpg")||fileExt.equalsIgnoreCase("jpeg"))
+						ImageIO.write(bufFinal,"JPG",baos);
+					else {// Note, GIF is converted to PNG, we need to change the filename
+						ImageIO.write(bufFinal,"PNG",baos);
+						if (fileExt.equalsIgnoreCase("gif")){
+							// File is a gif, hence, add png to the filename
+							addPngToFileName = true;
+						}
+					}
+					
+					// Set the progress to increase by the amount that the image
+					// is reduced in size
+					main.setProgress((int)file.length()-baos.size());
+					fileStream = new ByteArrayInputStream(baos.toByteArray());
+				}
+				else{
+					//if image don't need resize
+					fileStream = new FileInputStream(file);
+				}
+			}
+			catch (IOException e){
+				// Error somewhere
+				fileStream = new FileInputStream(file);
+			}
+		}
+		else{
+			//if the file is not an image, or maxPixels is not set
+			fileStream = new FileInputStream(file);
+		}
+	}
 
 	private void setBoundary(int length){
 
@@ -276,7 +344,7 @@ public class UploadThread extends Thread{
 		boundary = boundaryString;
 	}
 
-	private void setHeaderAndFooter(){
+	private void setHeaderAndFooter() throws IOException{
 
 		header = new String();
 		footer = new String();
@@ -286,7 +354,10 @@ public class UploadThread extends Thread{
 		// but before the file itself. The length of this, is what is required
 		// by the content-length header (along with the length of the file).
 		afterContent = lotsHyphens +"--"+ boundary + lineEnd +
-									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName()+"\""+lineEnd+
+									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName();
+		if (addPngToFileName)
+			afterContent += ".png";
+		afterContent += "\""+lineEnd+
 									"Content-Type: application/octet-stream"+lineEnd+lineEnd;
 
 		//footer = lineEnd + lineEnd + "--"+ lotsHyphens+boundary+"--";
@@ -331,6 +402,6 @@ public class UploadThread extends Thread{
 
 		// Length of what we are sending.
 		header +="Content-Length: ";
-		header += ""+(file.length()+afterContent.length()+footer.length())+lineEnd+lineEnd;
+		header += ""+(fileStream.available()+afterContent.length()+footer.length())+lineEnd+lineEnd;
 	}
 }
