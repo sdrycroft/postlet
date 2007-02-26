@@ -4,19 +4,19 @@
 
 /*  Copyright (C) 2005 Simon David Rycroft
 
-		This program is free software; you can redistribute it and/or
-		modify it under the terms of the GNU General Public License
-		as published by the Free Software Foundation; either version 2
-		of the License, or (at your option) any later version.
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
 
-		This program is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with this program; if not, write to the Free Software
-		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -63,36 +63,36 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 public class Main extends JApplet implements MouseListener, DropTargetListener {
 
-	JTable table;
-	JButton add, remove, upload, help;
-	TableData tabledata;
-	TableColumn sizeColumn;
-	File [] files;
-	JLabel progCompletion;
-	JProgressBar progBar;
-	int sentBytes,totalBytes,buttonClicked;
-	Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
-	PostletLabels pLabels;
-	Vector failedFiles, uploadedFiles;
+	private JTable table;
+	private JButton add, remove, upload, help;
+	private TableData tabledata;
+	private TableColumn sizeColumn;
+	private File [] files;
+	private JLabel progCompletion;
+	private JProgressBar progBar;
+	private int sentBytes,totalBytes,buttonClicked, maxPixels;
+	private Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
+	private PostletLabels pLabels;
+	private Vector failedFiles, uploadedFiles;
 
 	// Default error PrintStream!
-	PrintStream out = System.out;
+	private PrintStream out = System.out;
 
 	// Boolean set to false when a javascript method is executed
-	boolean javascript;
+	private boolean javascript;
 
 	// Parameters
-	URL endPageURL, helpPageURL, destinationURL;
-	boolean warnMessage, autoUpload, helpButton, failedFileMessage;
-	String language,endpage,helppage;
-	int maxThreads;
-	String [] fileExtensions;
+	private URL endPageURL, helpPageURL, destinationURL;
+	private boolean warnMessage, autoUpload, helpButton, failedFileMessage;
+	private String language,endpage,helppage;
+	private int maxThreads;
+	private String [] fileExtensions;
 
 	// URI list flavor (Hack for linux/KDE)
-	DataFlavor uriListFlavor;
+	private DataFlavor uriListFlavor;
 
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.12.1";
+	public static final String postletVersion = "0.13";
 
 	public void init() {
 		// First thing, output the version, for debugging purposes.
@@ -340,7 +340,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 		/* HELP BUTTON */
 		try {
-			if (getParameter("helpbutton").toLowerCase().equals("true"))
+			if (getParameter("helpbutton").toLowerCase().trim().equals("true"))
 				helpButton = true;
 			else
 				helpButton = false;
@@ -353,7 +353,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		// This should be set to false if failed files are being handled in
 		// javascript
 		try {
-			if (getParameter("failedfilesmessage").toLowerCase().equals("true"))
+			if (getParameter("failedfilesmessage").toLowerCase().trim().equals("true"))
 				failedFileMessage = true;
 			else
 				failedFileMessage = false;
@@ -361,8 +361,27 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			errorMessage( "failedfilemessage is null");
 			failedFileMessage = false;
 		}
+		
+		/* MAX PIXELS FOR AN UPLOADED IMAGE */
+		// This supports PNG, GIF and JPEG images only.  All other images will
+		// not be resized
+		try {
+			Integer maxps = new Integer(getParameter("maxpixels"));
+			maxPixels = maxps.intValue();
+		} catch (NullPointerException nullmaxpixels){
+			errorMessage( "maxpixels is null");
+		} catch (NumberFormatException nummaxpixels){
+			errorMessage( "maxpixels is not a number");}
 	}
 
+	public int getMaxPixels(){
+		return maxPixels;
+	}
+	
+	public void setMaxPixels(int pixels){
+		maxPixels = pixels;
+	}
+	
 	public void removeClick() {
 		if(table.getSelectedRowCount()>0) {
 			File [] fileTemp = new File[files.length-table.getSelectedRowCount()];
