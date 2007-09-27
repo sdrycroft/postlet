@@ -31,19 +31,29 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+
+import java.io.InputStream;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 
 public class UploadThread extends Thread{
 
 	private File file;
 	private Main main;
-	private int attempts;
+	private int attempts, finalByteSize;
 	private static final String lotsHyphens="---------------------------";
-	private static final String lineEnd="\n";
+	private static final String lineEnd="\r\n";
 	private String header, footer, request, reply, afterContent;
-	//private String scriptUrl;
+	private InputStream fileStream;
 	private URL url;
 	private String boundary;
 	private Socket sock;
+	private boolean addPngToFileName;
 
 	public UploadThread(URL u, File f, Main m) throws IOException, UnknownHostException{
 
@@ -51,7 +61,6 @@ public class UploadThread extends Thread{
 		file = f;
 		main = m;
 		attempts = 0;
-		sock = getSocket();
 	}
 
 	public void run(){
@@ -67,7 +76,8 @@ public class UploadThread extends Thread{
 		catch (IOException ioe){
 			// No idea what could have caused this, so simply call this.run() again.
 			this.run();
-			// This could end up looping.  Probably need to find out what could cause this.
+			// This could end up looping. Probably need to find out what could cause this.
+			// I guess I could count the number of attempts!
 			System.out.println("*** IOException: UploadThread ***");
 		}
 	}
@@ -75,20 +85,40 @@ public class UploadThread extends Thread{
 	private void upload() throws FileNotFoundException, IOException{
 
 		this.uploadFile();
-		if (reply != null && reply.indexOf("FILEFAILED")>=0) {
-			if (reply.indexOf("FILETOOBIG")<0){
+		// Check to see if the file was uploaded
+		if (reply != null && reply.indexOf("POSTLET:NO")>0) {
+			if (reply.indexOf("POSTLET:RETRY")>0){
+				reply = "";
 				if (attempts<3) {
 					main.setProgress(-(int)file.length());
+					main.setProgress(finalByteSize); // Has to be added after whole file is removed.
 					attempts++;
 					this.upload();
 				}
+				else {
+					main.addFailedFile(file);
+					main.setProgress(finalByteSize);
+				}
 			} else {
 				attempts = 5;
+				main.addFailedFile(file);
+				main.setProgress(finalByteSize);
 			}
+		}
+		else {
+			// Set the progress, that this file has uploaded.
+			main.addUploadedFile(file);
+			main.setProgress(finalByteSize);
 		}
 	}
 
 	private synchronized void uploadFile() throws FileNotFoundException, IOException{
+
+		// Get the file stream first, as this is needed for the content-length
+		// header.
+		this.setInputStream();
+		
+		sock = getSocket();
 
 		this.setBoundary(40);
 		this.setHeaderAndFooter();
@@ -99,7 +129,15 @@ public class UploadThread extends Thread{
 
 		// Write the request, and the header.
 		output.writeBytes(request);
-		output.writeBytes(header);
+		try {
+			output.write(header.getBytes("UTF-8")); }// Write in UTF-8! - May change all
+		catch (UnsupportedEncodingException uee){
+			// Just ignore this error, and instead write out the bytes without
+			// getting as UTF-8!
+			main.errorMessage("Couldn't get header in UTF-8");
+			output.writeBytes(header);
+		}
+
 		output.flush();
 
 		// Create a ReadLine thread to read the possible output.
@@ -119,7 +157,7 @@ public class UploadThread extends Thread{
 
 		// Following reads the file, and streams it.
 		/////////////////////////////////////////////////////////////
-		FileInputStream fileStream = new FileInputStream(file);
+		//FileInputStream fileStream = new FileInputStream(file);
 		int numBytes = 0;
 
 		if (file.length()>Integer.MAX_VALUE){
@@ -131,21 +169,21 @@ public class UploadThread extends Thread{
 		int maxBufferSize = 1024;
 		int bytesAvailable = fileStream.available();
 		int bufferSize = Math.min(bytesAvailable,maxBufferSize);
-		int finalByteSize = 0;
+		finalByteSize = 0; // Needs to be passed to the upload method!
 
 		byte buffer [] = new byte[bufferSize];
 
 		int bytesRead = fileStream.read(buffer, 0, bufferSize);
-		while (bytesAvailable > 0) 
+		while (bytesAvailable > 0)
 		{
 			output.write(buffer, 0, bufferSize);
 			if (bufferSize == maxBufferSize)
 				main.setProgress(bufferSize);
-			else 
+			else
 				finalByteSize = bufferSize;
 			bytesAvailable = fileStream.available();
 			bufferSize = Math.min(bytesAvailable,maxBufferSize);
-			bytesRead = fileStream.read(buffer, 0,  bufferSize);
+			bytesRead = fileStream.read(buffer, 0, bufferSize);
 		}
 		///////////////////////////////////////////////////////////
 
@@ -163,24 +201,23 @@ public class UploadThread extends Thread{
 			// some output!
 		}
 		reply = rl.getRead();
+		main.errorMessage("REPLY");
+		main.errorMessage(reply);
+		main.errorMessage("END REPLY");
 		// Close the socket and streams.
 		input.close();
 		output.close();
 		sock.close();
-
-		// Set the progress, that this file has uploaded.
-		//main.setProgress((int)file.length());
-		main.setProgress(finalByteSize);
 	}
 
 	// Each UploadThread gets a new Socket.
 	// This is bad, especially when talking to HTTP/1.1 servers
-	// which are able to keep a connection alive.  May change this
+	// which are able to keep a connection alive. May change this
 	// to have the UploadManager create the threads, and reuse them
 	// passing them to each of the UploadThreads.
 	private Socket getSocket() throws IOException, UnknownHostException{
-	    if (url.getProtocol().equalsIgnoreCase("https")){
-            // Create a trust manager that does not validate certificate chains
+		if (url.getProtocol().equalsIgnoreCase("https")){
+			// Create a trust manager that does not validate certificate chains
 			TrustManager[] trustAllCerts = new TrustManager[]{
 				new X509TrustManager() {
 					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -203,16 +240,16 @@ public class UploadThread extends Thread{
 					return sc.getSocketFactory().createSocket(url.getHost(),url.getPort());
 				else
 					return sc.getSocketFactory().createSocket(url.getHost(),443);
-			} 
+			}
 			catch (Exception e) {
 			}
 		}
-	    else {
+		else {
 			Socket s;
 			String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
 			String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
 			String proxyType = System.getProperties().getProperty("deployment.proxy.type");
-			if ( (proxyHost == null || proxyType == null) || 
+			if ( (proxyHost == null || proxyType == null) ||
 					(proxyHost.equalsIgnoreCase("") || proxyType.equalsIgnoreCase("0") || proxyType.equalsIgnoreCase("2") || proxyType.equalsIgnoreCase("-1") )) {
 				if (url.getPort()>0)
 					s = new Socket(url.getHost(),url.getPort());
@@ -238,8 +275,63 @@ public class UploadThread extends Thread{
 				}
 			}
 			return s;
-	    }
-	    return null;// Add an error here!
+		}
+		return null;// Add an error here!
+	}
+	
+	private void setInputStream() throws FileNotFoundException{
+		//check	if the file is an image from its extention
+		String fileExt = file.getName();
+		fileExt=fileExt.substring(fileExt.lastIndexOf(".")+1);
+		
+		// If file is an image supported by Java (Currently only JPEG, GIF and PNG)
+		if((fileExt.equalsIgnoreCase("gif")
+			||fileExt.equalsIgnoreCase("jpg")
+			||fileExt.equalsIgnoreCase("jpeg")
+			||fileExt.equalsIgnoreCase("png")) && main.getMaxPixels()>0){
+			try	{
+				BufferedImage buf=ImageIO.read(file);
+				int currentPixels = buf.getWidth()*buf.getHeight();
+				int maxPixels = main.getMaxPixels();				
+				if	(currentPixels>maxPixels){
+					double reduceBy = Math.sqrt(maxPixels)/Math.sqrt(currentPixels);
+					int	newWidth=(int)Math.round(buf.getWidth()*reduceBy);
+					int	newHeigth=(int)Math.round(buf.getHeight()*reduceBy);							   
+					BufferedImage bufFinal=new BufferedImage(newWidth,newHeigth,BufferedImage.TYPE_INT_RGB);
+					Graphics2D g=(Graphics2D)bufFinal.getGraphics();
+					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+					g.drawImage(buf,0,0,newWidth,newHeigth,null);
+					g.dispose();
+					ByteArrayOutputStream baos=new ByteArrayOutputStream();
+					if	(fileExt.equalsIgnoreCase("jpg")||fileExt.equalsIgnoreCase("jpeg"))
+						ImageIO.write(bufFinal,"JPG",baos);
+					else {// Note, GIF is converted to PNG, we need to change the filename
+						ImageIO.write(bufFinal,"PNG",baos);
+						if (fileExt.equalsIgnoreCase("gif")){
+							// File is a gif, hence, add png to the filename
+							addPngToFileName = true;
+						}
+					}
+					
+					// Set the progress to increase by the amount that the image
+					// is reduced in size
+					main.setProgress((int)file.length()-baos.size());
+					fileStream = new ByteArrayInputStream(baos.toByteArray());
+				}
+				else{
+					//if image don't need resize
+					fileStream = new FileInputStream(file);
+				}
+			}
+			catch (IOException e){
+				// Error somewhere
+				fileStream = new FileInputStream(file);
+			}
+		}
+		else{
+			//if the file is not an image, or maxPixels is not set
+			fileStream = new FileInputStream(file);
+		}
 	}
 
 	private void setBoundary(int length){
@@ -252,25 +344,28 @@ public class UploadThread extends Thread{
 		boundary = boundaryString;
 	}
 
-	private void setHeaderAndFooter(){
+	private void setHeaderAndFooter() throws IOException{
 
 		header = new String();
 		footer = new String();
 		request = new String();
 
 		// AfterContent is what is sent after the Content-Length header field,
-		// but before the file itself.  The length of this, is what is required
+		// but before the file itself. The length of this, is what is required
 		// by the content-length header (along with the length of the file).
 		afterContent = lotsHyphens +"--"+ boundary + lineEnd +
-									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName()+"\""+lineEnd+
+									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName();
+		if (addPngToFileName)
+			afterContent += ".png";
+		afterContent += "\""+lineEnd+
 									"Content-Type: application/octet-stream"+lineEnd+lineEnd;
 
 		//footer = lineEnd + lineEnd + "--"+ lotsHyphens+boundary+"--";
 		// LineEnd removed as it was adding an extra byte to the uploaded file
-		footer = lineEnd + "--"+ lotsHyphens+boundary+"--";
+		footer = lineEnd + "--"+ lotsHyphens+boundary+"--" + lineEnd;
 
 		// The request includes the absolute URI to the script which will
-		// accept the file upload.  This is perfectly valid, although it is
+		// accept the file upload. This is perfectly valid, although it is
 		// normally only used by a client when connecting to a proxy server.
 		// COULD CREATE PROBLEMS WITH SOME WEB SERVERS.
 		request="POST " + url.toExternalForm() + " HTTP/1.1" + lineEnd;
@@ -279,9 +374,12 @@ public class UploadThread extends Thread{
 		// a proxy)
 		header +="Host: " + url.getHost() + lineEnd;
 
-		// Give a  user agent just for completeness.  This could be changed so that
+		// Give a user agent just for completeness. This could be changed so that
 		// access by the Postlet applet can be logged.
-		header +="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10)" + lineEnd;
+		//header +="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.10)" + lineEnd;
+		//Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8)
+		header +="User-Agent: Mozilla/5.0 (Java/Postlet; rv:" + main.postletVersion + ")" + lineEnd;
+
 
 		// Expect a 100-Continue message
 		// header +="Expect: 100-continue" + lineEnd;
@@ -290,7 +388,7 @@ public class UploadThread extends Thread{
 		header +="Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"+ lineEnd;
 		header +="Accept-Language: en-us,en;q=0.5" + lineEnd;
 		header +="Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7" + lineEnd;
-		
+
 		// Add the cookie if it is set in the browser
 		String cookie = main.getCookie();
 		if (cookie.length()>0){
@@ -304,6 +402,6 @@ public class UploadThread extends Thread{
 
 		// Length of what we are sending.
 		header +="Content-Length: ";
-		header += ""+(file.length()+afterContent.length()+footer.length())+lineEnd+lineEnd;
+		header += ""+(fileStream.available()+afterContent.length()+footer.length())+lineEnd+lineEnd;
 	}
 }
