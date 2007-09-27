@@ -29,11 +29,11 @@ public class UploaderFileFilter extends FileFilter {
 	public UploaderFileFilter() {
 	this.filters = new Hashtable();
 	}
-	
+
 	public boolean accept(File f) {
 	if(f != null) {
 		if(f.isDirectory()) {
-				// Accept directories.  Change when code will allow.
+				// Accept directories. Change when code will allow.
 		return true;
 		}
 		String extension = getExtension(f);
@@ -54,7 +54,7 @@ public class UploaderFileFilter extends FileFilter {
 	}
 	return null;
 	}
-	 
+
 	public void addExtension(String extension) {
 	if(filters == null) {
 		filters = new Hashtable(5);
@@ -62,7 +62,7 @@ public class UploaderFileFilter extends FileFilter {
 	filters.put(extension.toLowerCase(), this);
 	fullDescription = null;
 	}
-	
+
 	public String getDescription() {
 	if(fullDescription == null) {
 		if(description == null || isExtensionListInDescription()) {
@@ -82,17 +82,17 @@ public class UploaderFileFilter extends FileFilter {
 	}
 	return fullDescription;
 	}
-	
+
 	public void setDescription(String description) {
 	this.description = description;
 	fullDescription = null;
 	}
-	
+
 	public void setExtensionListInDescription(boolean b) {
 	useExtensionsInDescription = b;
 	fullDescription = null;
 	}
-	
+
 	public boolean isExtensionListInDescription() {
 	return useExtensionsInDescription;
 	}
