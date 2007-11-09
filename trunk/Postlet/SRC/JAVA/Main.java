@@ -43,9 +43,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -64,16 +66,18 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 	private JTable table;
-	private JButton add, remove, upload, help;
+	private JScrollPane scrollPane;
+	private JPanel rightPanel;
+	private JButton add,remove,upload,help;
 	private TableData tabledata;
 	private TableColumn sizeColumn;
 	private File [] files;
 	private JLabel progCompletion;
 	private JProgressBar progBar;
 	private int sentBytes,totalBytes,buttonClicked, maxPixels;
-	private Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
+	private Color backgroundColour,columnHeadColourBack,columnHeadColourFore;
 	private PostletLabels pLabels;
-	private Vector failedFiles, uploadedFiles;
+	private Vector failedFiles,uploadedFiles;
 
 	// Default error PrintStream!
 	private PrintStream out = System.out;
@@ -82,9 +86,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private boolean javascript;
 
 	// Parameters
-	private URL endPageURL, helpPageURL, destinationURL;
-	private boolean warnMessage, autoUpload, helpButton, failedFileMessage;
-	private String language,endpage,helppage;
+	private URL endPageURL, helpPageURL, destinationURL,dropImageURL;
+	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton;
+	private String language,dropImage;
 	private int maxThreads;
 	private String [] fileExtensions;
 
@@ -140,54 +144,64 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		} catch (java.util.TooManyListenersException tmle){
 			errorMessage( "Too many listeners to drop!");
 		}
-
-		// Table for the adding of Filenames and sizes to.
-		tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
-		table = new JTable(tabledata);
-		table.setColumnSelectionAllowed(false);
-		//table.setDragEnabled(false); // This method is not available to Java 3!
-		sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
-		sizeColumn.setMaxWidth(100);
-		table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
-		if (columnHeadColourBack != null && backgroundColour != null){
-			errorMessage( "setting the tables colours");
-			table.getTableHeader().setBackground(columnHeadColourBack);
-			table.getTableHeader().setForeground(columnHeadColourFore);
-			table.setBackground(backgroundColour);
+		
+		if (dropImageURL!=null){
+			// Instead of the table, we'll add a lovely image to the center
+			// of the applet to drop images on.
+			ImageIcon dropIcon = new ImageIcon(dropImageURL);
+			JButton iconButton = new JButton(dropIcon);
+			pane.add(iconButton, BorderLayout.CENTER);			
 		}
-		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		else {
+			// Table for the adding of Filenames and sizes to.
+			tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
+			table = new JTable(tabledata);
+			table.setColumnSelectionAllowed(false);
+			//table.setDragEnabled(false); // This method is not available to Java 3!
+			sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
+			sizeColumn.setMaxWidth(100);
+			table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
+			if (columnHeadColourBack != null && backgroundColour != null){
+				errorMessage( "setting the tables colours");
+				table.getTableHeader().setBackground(columnHeadColourBack);
+				table.getTableHeader().setForeground(columnHeadColourFore);
+				table.setBackground(backgroundColour);
+			}
+			scrollPane = new JScrollPane(table);
+			scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-		// Add the scroll pane/table to the main pane
-		pane.add(scrollPane, BorderLayout.CENTER);
-
-		JPanel rightPanel;
-		if (helpButton)
-			rightPanel = new JPanel(new GridLayout(4,1,10,10));
-		else
-			rightPanel = new JPanel(new GridLayout(3,1,10,10));
-		rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-
-		add = new JButton(pLabels.getLabel(6));
-		add.addMouseListener(this);
-		rightPanel.add(add);
-
-		remove = new JButton(pLabels.getLabel(7));
-		remove.addMouseListener(this);
-		remove.setEnabled(false);
-		rightPanel.add(remove);
-
-		upload = new JButton(pLabels.getLabel(8));
-		upload.addMouseListener(this);
-		upload.setEnabled(false);
-		rightPanel.add(upload);
-
-		help = new JButton(pLabels.getLabel(9));
-		if (helpButton){
-			help.addMouseListener(this);
-			rightPanel.add(help);
+			// Add the scroll pane/table to the main pane
+			pane.add(scrollPane, BorderLayout.CENTER);
 		}
-		pane.add(rightPanel,"East");
+		
+		if (helpButton || addButton || removeButton || uploadButton){
+			if (helpButton)
+				rightPanel = new JPanel(new GridLayout(4,1,10,10));
+			else
+				rightPanel = new JPanel(new GridLayout(3,1,10,10));
+			rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+			add = new JButton(pLabels.getLabel(6));
+			add.addMouseListener(this);
+			rightPanel.add(add);
+
+			remove = new JButton(pLabels.getLabel(7));
+			remove.addMouseListener(this);
+			remove.setEnabled(false);
+			rightPanel.add(remove);
+
+			upload = new JButton(pLabels.getLabel(8));
+			upload.addMouseListener(this);
+			upload.setEnabled(false);
+			rightPanel.add(upload);
+
+			help = new JButton(pLabels.getLabel(9));
+			if (helpButton){
+				help.addMouseListener(this);
+				rightPanel.add(help);
+			}
+			pane.add(rightPanel,"East");
+		}
 
 		JPanel progPanel = new JPanel(new GridLayout(2, 1));
 		progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
@@ -347,6 +361,54 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		} catch(NullPointerException nullwarnmessage){
 			errorMessage( "helpbutton is null");
 			helpButton = false;
+		}
+
+		/* ADD BUTTON */
+		try {
+			if (getParameter("addbutton").toLowerCase().trim().equals("false"))
+				addButton = false;
+			else
+				addButton = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "addbutton is null");
+			addButton = true;
+		}
+
+		/* REMOVE BUTTON */
+		try {
+			if (getParameter("removebutton").toLowerCase().trim().equals("false"))
+				removeButton = false;
+			else
+				removeButton = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "removebutton is null");
+			removeButton = true;
+		}
+
+		/* UPLOAD BUTTON */
+		try {
+			if (getParameter("uploadbutton").toLowerCase().trim().equals("false"))
+				uploadButton = false;
+			else
+				uploadButton = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "uploadbutton is null");
+			uploadButton = true;
+		}
+				
+				/* REPLACE TABLE WITH "DROP" IMAGE */
+				try {
+			dropImage = getParameter("dropimage");
+			dropImageURL = new URL(dropImage);
+				} catch(NullPointerException nullwanrmessage){
+						errorMessage( "Drop image is null - using table");
+				} catch(MalformedURLException urlexception){
+			try {
+			URL codeBase = getCodeBase();
+			dropImageURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImage);
+			} catch(MalformedURLException urlexception2){
+			errorMessage("dropimage is not a valid reference");
+			}
 		}
 
 		/* FAILED FILES WARNING */
