@@ -148,6 +148,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		if (dropImageURL!=null){
 			// Instead of the table, we'll add a lovely image to the center
 			// of the applet to drop images on.
+			errorMessage("Attempting to use dropImageURL");
 			ImageIcon dropIcon = new ImageIcon(dropImageURL);
 			JButton iconButton = new JButton(dropIcon);
 			pane.add(iconButton, BorderLayout.CENTER);			
@@ -226,13 +227,13 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		pane.add(progPanel,"South");
 
 		// If the destination has not been set/isn't a proper URL
-		// Then deactivate the buttons.
+		// Then deactivate the buttons. 
 		if (destinationURL == null)
 			add.setEnabled(false);
 	}
 
 	public void errorMessage(String message){
-		out.println("***"+message+"***");
+		out.println("*** "+message+" ***");
 	}
 	// Helper method for getting the parameters from the webpage.
 	private void getParameters(){
