@@ -174,6 +174,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			if (backgroundColour != null){
 			    scrollPane.setBackground(backgroundColour);
 			}
+			// Always set the table background colour as White.
+			// May change this if required, only would require alot of Params!
+			scrollPane.getViewport().setBackground(Color.white);
 
 			// Add the scroll pane/table to the main pane
 			pane.add(scrollPane, BorderLayout.CENTER);
@@ -223,10 +226,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			rightPanel.setBackground(backgroundColour);
 			progPanel.setBackground(backgroundColour);
 		}
-		// Always set the table background colour as White.
-		// May change this if required, only would require alot of Params!
-		scrollPane.getViewport().setBackground(Color.white);
-
 		pane.add(progPanel,"South");
 
 		// If the destination has not been set/isn't a proper URL
