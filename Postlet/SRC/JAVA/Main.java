@@ -396,18 +396,18 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			uploadButton = true;
 		}
 				
-				/* REPLACE TABLE WITH "DROP" IMAGE */
-				try {
+		/* REPLACE TABLE WITH "DROP" IMAGE */
+		try {
 			dropImage = getParameter("dropimage");
 			dropImageURL = new URL(dropImage);
-				} catch(NullPointerException nullwanrmessage){
-						errorMessage( "Drop image is null - using table");
-				} catch(MalformedURLException urlexception){
+		} catch(NullPointerException nullwanrmessage){
+			errorMessage( "Drop image is null - using table");
+		} catch(MalformedURLException urlexception){
 			try {
-			URL codeBase = getCodeBase();
-			dropImageURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImage);
+				URL codeBase = getCodeBase();
+				dropImageURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImage);
 			} catch(MalformedURLException urlexception2){
-			errorMessage("dropimage is not a valid reference");
+				errorMessage("dropimage is not a valid reference");
 			}
 		}
 
