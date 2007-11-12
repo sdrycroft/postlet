@@ -171,6 +171,10 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			scrollPane = new JScrollPane(table);
 			scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
+			if (backgroundColour != null){
+			    scrollPane.setBackground(backgroundColour);
+			}
+
 			// Add the scroll pane/table to the main pane
 			pane.add(scrollPane, BorderLayout.CENTER);
 		}
@@ -217,7 +221,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		if (backgroundColour != null){
 			pane.setBackground(backgroundColour);
 			rightPanel.setBackground(backgroundColour);
-			scrollPane.setBackground(backgroundColour);
 			progPanel.setBackground(backgroundColour);
 		}
 		// Always set the table background colour as White.
@@ -400,9 +403,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		/* REPLACE TABLE WITH "DROP" IMAGE */
 		try {
 			dropImage = getParameter("dropimage");
-			dropImageURL = new URL(dropImage);
-		} catch(NullPointerException nullwanrmessage){
-			errorMessage( "Drop image is null - using table");
+			if (dropImage!=null)
+			    dropImageURL = new URL(dropImage);
 		} catch(MalformedURLException urlexception){
 			try {
 				URL codeBase = getCodeBase();
