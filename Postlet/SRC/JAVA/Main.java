@@ -182,37 +182,42 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			pane.add(scrollPane, BorderLayout.CENTER);
 		}
 
-		if (helpButton || addButton || removeButton || uploadButton){
-			errorMessage("Adding button");
-			if (helpButton)
-				rightPanel = new JPanel(new GridLayout(4,1,10,10));
-			else
-				rightPanel = new JPanel(new GridLayout(3,1,10,10));
-			rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		errorMessage("Adding button");
+		if (helpButton)
+			rightPanel = new JPanel(new GridLayout(4,1,10,10));
+		else
+			rightPanel = new JPanel(new GridLayout(3,1,10,10));
+		rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-			add = new JButton(pLabels.getLabel(6));
+		add = new JButton(pLabels.getLabel(6));
+		if(addButton){
 			add.addMouseListener(this);
 			rightPanel.add(add);
+		}
 
-			remove = new JButton(pLabels.getLabel(7));
+		remove = new JButton(pLabels.getLabel(7));
+		if(removeButton){
 			remove.addMouseListener(this);
 			remove.setEnabled(false);
 			rightPanel.add(remove);
+		}
 
-			upload = new JButton(pLabels.getLabel(8));
+		upload = new JButton(pLabels.getLabel(8));
+		if(uploadButton){
 			upload.addMouseListener(this);
 			upload.setEnabled(false);
 			rightPanel.add(upload);
-
-			help = new JButton(pLabels.getLabel(9));
-			if (helpButton){
-				help.addMouseListener(this);
-				rightPanel.add(help);
-			}
-			if (backgroundColour != null)
-				rightPanel.setBackground(backgroundColour);
-			pane.add(rightPanel,"East");
 		}
+
+		help = new JButton(pLabels.getLabel(9));
+		if (helpButton){
+			help.addMouseListener(this);
+			rightPanel.add(help);
+		}
+		if (backgroundColour != null)
+			rightPanel.setBackground(backgroundColour);
+		if(addButton || removeButton || helpButton || uploadButton)
+			pane.add(rightPanel,"East");
 
 		JPanel progPanel = new JPanel(new GridLayout(2, 1));
 		progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
@@ -799,10 +804,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 		if (files != null && files.length>0) {
 			errorMessage("Enabling the upload and remove buttons");
-			if (uploadButton)
-				upload.setEnabled(true);
-			if (removeButton)
-				remove.setEnabled(true);
+			upload.setEnabled(true);
+			remove.setEnabled(true);
 		}
 		if (files !=null && autoUpload){
 			uploadClick();
