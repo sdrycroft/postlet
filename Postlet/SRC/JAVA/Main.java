@@ -499,6 +499,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			if (dropImageURL!=null && dropImageUploadURL!=null){
 				dropIconUpload = new ImageIcon(dropImageUploadURL);
 				iconLabel.setIcon(dropIconUpload);
+				repaint();
 			}
 			sentBytes = 0;
 			progBar.setMaximum(totalBytes);
@@ -553,6 +554,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			help.setEnabled(true);
 			if (dropImageURL!=null && dropImageUploadURL!=null){
 				iconLabel.setIcon(dropIcon);
+				repaint();
 			}
 			failedFiles.clear();
 			uploadedFiles.clear();
