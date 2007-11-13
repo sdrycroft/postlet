@@ -710,9 +710,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			// Return a "/" delimited string (as "/" is not a legal character).
 			for(int i=0; i<failedFiles.size(); i++){
 				File tempFile = (File)failedFiles.elementAt(i);
-				failedFilesString += tempFile.getName();
-				if (i!=failedFiles.size()-1)
-					failedFilesString += "/";
+				failedFilesString += tempFile.getName()+"/";
 			}
 			return failedFilesString;
 			/*
@@ -735,9 +733,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			// Return a "/" delimited string (as "/" is not a legal character).
 			for(int i=0; i<uploadedFiles.size(); i++){
 				File tempFile = (File)uploadedFiles.elementAt(i);
-				uploadedFilesString += tempFile.getName();
-				if (i!=failedFiles.size()-1)
-					uploadedFilesString += "/";
+				uploadedFilesString += tempFile.getName()+"/";
 			}
 			return uploadedFilesString;
 			/*
