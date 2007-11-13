@@ -700,14 +700,28 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 
+	/**
+	 * This method has been altered due to IE (and Safari) being shite
+	 */
 	public String [] javascriptGetFailedFiles(){
 		if (failedFiles.size()>0){
+			String failedFilesString = "";
+			// Return a "/" delimited string (as "/" is not a legal character).
+			for(int i=0; i<failedFiles.size(); i++){
+				File tempFile = (File)failedFiles.elementAt(i);
+				failedFilesString += tempFile.getName();
+				if (i!=failedFiles.size()-1)
+					failedFilesString += "/";
+			}
+			return failedFilesString;
+			/*
 			String [] arrayFailedFiles = new String[failedFiles.size()];
 			for (int i=0; i<failedFiles.size(); i++){
 				File tempFile = (File)failedFiles.elementAt(i);
 				arrayFailedFiles[i] = tempFile.getName();
 			}
 			return arrayFailedFiles;
+			*/
 		}
 		else {
 			return null;
@@ -716,12 +730,23 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 	public String [] javascriptGetUploadedFiles(){
 		if (uploadedFiles.size()>0){
+			String uploadedFilesString = "";
+			// Return a "/" delimited string (as "/" is not a legal character).
+			for(int i=0; i<uploadedFiles.size(); i++){
+				File tempFile = (File)uploadedFiles.elementAt(i);
+				uploadedFilesString += tempFile.getName();
+				if (i!=failedFiles.size()-1)
+					uploadedFilesString += "/";
+			}
+			return uploadedFilesString;
+			/*
 			String [] arrayUploadedFiles = new String[uploadedFiles.size()];
 			for (int i=0; i<uploadedFiles.size(); i++){
 				File tempFile = (File)uploadedFiles.elementAt(i);
 				arrayUploadedFiles[i] = tempFile.getName();
 			}
 			return arrayUploadedFiles;
+			*/
 		}
 		else {
 			return null;
