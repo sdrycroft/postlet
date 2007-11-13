@@ -68,12 +68,12 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JPanel rightPanel;
-	private JButton add,remove,upload,help,iconButton;
+	private JButton add,remove,upload,help;
 	private ImageIcon dropIcon;	
 	private TableData tabledata;
 	private TableColumn sizeColumn;
 	private File [] files;
-	private JLabel progCompletion;
+	private JLabel progCompletion,iconLabel;
 	private JProgressBar progBar;
 	private int sentBytes,totalBytes,buttonClicked, maxPixels;
 	private Color backgroundColour,columnHeadColourBack,columnHeadColourFore;
@@ -175,7 +175,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			errorMessage("Attempting to use dropImageURL");
 			dropIcon = new ImageIcon(dropImageURL);
 			iconLabel = new JLabel(dropIcon);
-			pane.add(iconButton, BorderLayout.CENTER);			
+			pane.add(iconLabel, BorderLayout.CENTER);			
 		}
 		else {
 			// Add the scroll pane/table to the main pane
