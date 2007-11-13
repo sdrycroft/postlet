@@ -174,7 +174,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			// of the applet to drop images on.
 			errorMessage("Attempting to use dropImageURL");
 			dropIcon = new ImageIcon(dropImageURL);
-			iconButton = new JButton(dropIcon);
+			iconLabel = new JLabel(dropIcon);
 			pane.add(iconButton, BorderLayout.CENTER);			
 		}
 		else {
