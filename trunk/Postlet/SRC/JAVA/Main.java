@@ -68,7 +68,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JPanel rightPanel;
-	private JButton add,remove,upload,help;
+	private JButton add,remove,upload,help,iconButton;
+	private ImageIcon dropIcon;	
 	private TableData tabledata;
 	private TableColumn sizeColumn;
 	private File [] files;
@@ -172,8 +173,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			// Instead of the table, we'll add a lovely image to the center
 			// of the applet to drop images on.
 			errorMessage("Attempting to use dropImageURL");
-			ImageIcon dropIcon = new ImageIcon(dropImageURL);
-			JButton iconButton = new JButton(dropIcon);
+			dropIcon = new ImageIcon(dropImageURL);
+			iconButton = new JButton(dropIcon);
 			pane.add(iconButton, BorderLayout.CENTER);			
 		}
 		else {
