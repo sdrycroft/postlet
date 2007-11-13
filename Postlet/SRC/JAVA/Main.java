@@ -209,6 +209,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				help.addMouseListener(this);
 				rightPanel.add(help);
 			}
+			if (backgroundColour != null)
+				rightPanel.setBackground(backgroundColour);
 			pane.add(rightPanel,"East");
 		}
 
@@ -224,7 +226,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 		if (backgroundColour != null){
 			pane.setBackground(backgroundColour);
-			rightPanel.setBackground(backgroundColour);
 			progPanel.setBackground(backgroundColour);
 		}
 		pane.add(progPanel,"South");
