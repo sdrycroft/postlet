@@ -702,8 +702,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 	/**
 	 * This method has been altered due to IE (and Safari) being shite
+	 * (it did turn an array - oh well, backwards stepping).
 	 */
-	public String [] javascriptGetFailedFiles(){
+	public String javascriptGetFailedFiles(){
 		if (failedFiles.size()>0){
 			String failedFilesString = "";
 			// Return a "/" delimited string (as "/" is not a legal character).
@@ -728,7 +729,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 
-	public String [] javascriptGetUploadedFiles(){
+	public String javascriptGetUploadedFiles(){
 		if (uploadedFiles.size()>0){
 			String uploadedFilesString = "";
 			// Return a "/" delimited string (as "/" is not a legal character).
