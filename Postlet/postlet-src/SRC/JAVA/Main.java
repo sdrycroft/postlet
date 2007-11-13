@@ -43,9 +43,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -64,16 +66,19 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 	private JTable table;
-	private JButton add, remove, upload, help;
+	private JScrollPane scrollPane;
+	private JPanel rightPanel;
+	private JButton add,remove,upload,help;
+	private ImageIcon dropIcon,dropIconUpload,dropIconAdded;	
 	private TableData tabledata;
 	private TableColumn sizeColumn;
 	private File [] files;
-	private JLabel progCompletion;
+	private JLabel progCompletion,iconLabel;
 	private JProgressBar progBar;
 	private int sentBytes,totalBytes,buttonClicked, maxPixels;
-	private Color backgroundColour, columnHeadColourBack, columnHeadColourFore;
+	private Color backgroundColour,columnHeadColourBack,columnHeadColourFore;
 	private PostletLabels pLabels;
-	private Vector failedFiles, uploadedFiles;
+	private Vector failedFiles,uploadedFiles;
 
 	// Default error PrintStream!
 	private PrintStream out = System.out;
@@ -82,9 +87,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private boolean javascript;
 
 	// Parameters
-	private URL endPageURL, helpPageURL, destinationURL;
-	private boolean warnMessage, autoUpload, helpButton, failedFileMessage;
-	private String language,endpage,helppage;
+	private URL endPageURL, helpPageURL, destinationURL,dropImageURL,dropImageUploadURL,dropImageAddedURL;
+	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton;
+	private String language, dropImage, dropImageAdded, dropImageUpload;
 	private int maxThreads;
 	private String [] fileExtensions;
 
@@ -92,7 +97,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private DataFlavor uriListFlavor;
 
 	// Postlet Version (Mainly for diagnostics and tracking)
-	public static final String postletVersion = "0.13";
+	public static final String postletVersion = "0.14";
 
 	public void init() {
 		// First thing, output the version, for debugging purposes.
@@ -140,7 +145,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		} catch (java.util.TooManyListenersException tmle){
 			errorMessage( "Too many listeners to drop!");
 		}
-
 		// Table for the adding of Filenames and sizes to.
 		tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
 		table = new JTable(tabledata);
@@ -155,13 +159,33 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			table.getTableHeader().setForeground(columnHeadColourFore);
 			table.setBackground(backgroundColour);
 		}
-		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-		// Add the scroll pane/table to the main pane
-		pane.add(scrollPane, BorderLayout.CENTER);
+		if (backgroundColour != null){
+			scrollPane.setBackground(backgroundColour);
+		}
+		// Always set the table background colour as White.
+		// May change this if required, only would require alot of Params!
+		scrollPane.getViewport().setBackground(Color.white);
+		
+		if (dropImageURL!=null){
+			// Instead of the table, we'll add a lovely image to the center
+			// of the applet to drop images on.
+			dropIcon = new ImageIcon(dropImageURL);
+			iconLabel = new JLabel(dropIcon);
+			pane.add(iconLabel, BorderLayout.CENTER);			
+		}
+		else {
+			// Add the scroll pane/table to the main pane
+			pane.add(scrollPane, BorderLayout.CENTER);
+		}
+		if (dropImageUploadURL!=null)
+			dropIconUpload = new ImageIcon(dropImageUploadURL);
+		if (dropImageAddedURL!=null)
+			dropIconAdded = new ImageIcon(dropImageAddedURL);
 
-		JPanel rightPanel;
+		errorMessage("Adding button");
 		if (helpButton)
 			rightPanel = new JPanel(new GridLayout(4,1,10,10));
 		else
@@ -169,25 +193,34 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		rightPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
 		add = new JButton(pLabels.getLabel(6));
-		add.addMouseListener(this);
-		rightPanel.add(add);
+		if(addButton){
+			add.addMouseListener(this);
+			rightPanel.add(add);
+		}
 
 		remove = new JButton(pLabels.getLabel(7));
-		remove.addMouseListener(this);
-		remove.setEnabled(false);
-		rightPanel.add(remove);
+		if(removeButton){
+			remove.addMouseListener(this);
+			remove.setEnabled(false);
+			rightPanel.add(remove);
+		}
 
 		upload = new JButton(pLabels.getLabel(8));
-		upload.addMouseListener(this);
-		upload.setEnabled(false);
-		rightPanel.add(upload);
+		if(uploadButton){
+			upload.addMouseListener(this);
+			upload.setEnabled(false);
+			rightPanel.add(upload);
+		}
 
 		help = new JButton(pLabels.getLabel(9));
 		if (helpButton){
 			help.addMouseListener(this);
 			rightPanel.add(help);
 		}
-		pane.add(rightPanel,"East");
+		if (backgroundColour != null)
+			rightPanel.setBackground(backgroundColour);
+		if(addButton || removeButton || helpButton || uploadButton)
+			pane.add(rightPanel,"East");
 
 		JPanel progPanel = new JPanel(new GridLayout(2, 1));
 		progPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
@@ -201,24 +234,18 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 		if (backgroundColour != null){
 			pane.setBackground(backgroundColour);
-			rightPanel.setBackground(backgroundColour);
-			scrollPane.setBackground(backgroundColour);
 			progPanel.setBackground(backgroundColour);
 		}
-		// Always set the table background colour as White.
-		// May change this if required, only would require alot of Params!
-		scrollPane.getViewport().setBackground(Color.white);
-
 		pane.add(progPanel,"South");
 
 		// If the destination has not been set/isn't a proper URL
-		// Then deactivate the buttons.
+		// Then deactivate the buttons. 
 		if (destinationURL == null)
 			add.setEnabled(false);
 	}
 
 	public void errorMessage(String message){
-		out.println("***"+message+"***");
+		out.println("*** "+message+" ***");
 	}
 	// Helper method for getting the parameters from the webpage.
 	private void getParameters(){
@@ -349,6 +376,79 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			helpButton = false;
 		}
 
+		/* ADD BUTTON */
+		try {
+			if (getParameter("addbutton").toLowerCase().trim().equals("false"))
+				addButton = false;
+			else
+				addButton = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "addbutton is null");
+			addButton = true;
+		}
+
+		/* REMOVE BUTTON */
+		try {
+			if (getParameter("removebutton").toLowerCase().trim().equals("false"))
+				removeButton = false;
+			else
+				removeButton = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "removebutton is null");
+			removeButton = true;
+		}
+
+		/* UPLOAD BUTTON */
+		try {
+			if (getParameter("uploadbutton").toLowerCase().trim().equals("false"))
+				uploadButton = false;
+			else
+				uploadButton = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "uploadbutton is null");
+			uploadButton = true;
+		}
+				
+		/* REPLACE TABLE WITH "DROP" IMAGE */
+		try {
+			dropImage = getParameter("dropimage");
+			if (dropImage!=null)
+				dropImageURL = new URL(dropImage);
+		} catch(MalformedURLException urlexception){
+			try {
+				URL codeBase = getCodeBase();
+				dropImageURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImage);
+			} catch(MalformedURLException urlexception2){
+				errorMessage("dropimage is not a valid reference");
+			}
+		}
+		/* REPLACE TABLE WITH "DROP" IMAGE (UPLOAD IMAGE)*/
+		try {
+			dropImageUpload = getParameter("dropimageupload");
+			if (dropImageUpload!=null)
+				dropImageUploadURL = new URL(dropImageUpload);
+		} catch(MalformedURLException urlexception){
+			try {
+				URL codeBase = getCodeBase();
+				dropImageUploadURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImageUpload);
+			} catch(MalformedURLException urlexception2){
+				errorMessage("dropimageupload is not a valid reference");
+			}
+		}
+		/* REPLACE TABLE WITH "DROP" IMAGE (ADDED IMAGE)*/
+		try {
+			dropImageAdded = getParameter("dropimageadded");
+			if (dropImageAdded!=null)
+				dropImageAddedURL = new URL(dropImageAdded);
+		} catch(MalformedURLException urlexception){
+			try {
+				URL codeBase = getCodeBase();
+				dropImageAddedURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImageAdded);
+			} catch(MalformedURLException urlexception2){
+				errorMessage("dropimageupload is not a valid reference");
+			}
+		}
+		
 		/* FAILED FILES WARNING */
 		// This should be set to false if failed files are being handled in
 		// javascript
@@ -412,6 +512,10 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			remove.setEnabled(false);
 			help.setEnabled(false);
 			upload.setEnabled(false);
+			if (dropImageURL!=null && dropImageUploadURL!=null){
+				iconLabel.setIcon(dropIconUpload);
+				repaint();
+			}
 			sentBytes = 0;
 			progBar.setMaximum(totalBytes);
 			progBar.setMinimum(0);
@@ -463,6 +567,10 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			tableUpdate();
 			add.setEnabled(true);
 			help.setEnabled(true);
+			if (dropImageURL!=null && dropImageUploadURL!=null){
+				iconLabel.setIcon(dropIcon);
+				repaint();
+			}
 			failedFiles.clear();
 			uploadedFiles.clear();
 		}
@@ -553,7 +661,11 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 		if (files != null && files.length>0) {
 			upload.setEnabled(true);
-			remove.setEnabled(true);
+			remove.setEnabled(true);			
+			if (dropImageURL!=null && dropImageAddedURL!=null){
+				iconLabel.setIcon(dropIconAdded);
+				repaint();
+			}
 		}
 		if (files !=null && autoUpload){
 			uploadClick();
@@ -588,28 +700,50 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 
-	public String [] javascriptGetFailedFiles(){
+	/**
+	 * This method has been altered due to IE (and Safari) being shite
+	 * (it did turn an array - oh well, backwards stepping).
+	 */
+	public String javascriptGetFailedFiles(){
 		if (failedFiles.size()>0){
+			String failedFilesString = "";
+			// Return a "/" delimited string (as "/" is not a legal character).
+			for(int i=0; i<failedFiles.size(); i++){
+				File tempFile = (File)failedFiles.elementAt(i);
+				failedFilesString += tempFile.getName()+"/";
+			}
+			return failedFilesString;
+			/*
 			String [] arrayFailedFiles = new String[failedFiles.size()];
 			for (int i=0; i<failedFiles.size(); i++){
 				File tempFile = (File)failedFiles.elementAt(i);
 				arrayFailedFiles[i] = tempFile.getName();
 			}
 			return arrayFailedFiles;
+			*/
 		}
 		else {
 			return null;
 		}
 	}
 
-	public String [] javascriptGetUploadedFiles(){
+	public String javascriptGetUploadedFiles(){
 		if (uploadedFiles.size()>0){
+			String uploadedFilesString = "";
+			// Return a "/" delimited string (as "/" is not a legal character).
+			for(int i=0; i<uploadedFiles.size(); i++){
+				File tempFile = (File)uploadedFiles.elementAt(i);
+				uploadedFilesString += tempFile.getName()+"/";
+			}
+			return uploadedFilesString;
+			/*
 			String [] arrayUploadedFiles = new String[uploadedFiles.size()];
 			for (int i=0; i<uploadedFiles.size(); i++){
 				File tempFile = (File)uploadedFiles.elementAt(i);
 				arrayUploadedFiles[i] = tempFile.getName();
 			}
 			return arrayUploadedFiles;
+			*/
 		}
 		else {
 			return null;
@@ -679,7 +813,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				System.out.println(i+": "+dataFlavour[i].getSubType());*/
 				if (dataFlavour[i].isFlavorJavaFileListType()){
 					// Windows
-					System.out.println("Windows");
+					errorMessage("Windows D'n'D");
 					List listOfFiles = (List)trans.getTransferData(DataFlavor.javaFileListFlavor);
 					Iterator iter = listOfFiles.iterator();
 					while (iter.hasNext()) {
@@ -689,6 +823,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					filesFound = true;
 				} else if (dataFlavour[i].equals(uriListFlavor)){
 					// Linux
+					errorMessage("Linux (Mac?) D'n'D");
 					BufferedReader in = new BufferedReader(dataFlavour[i].getReaderForText(trans));
 					String line = in.readLine();
 					while(line!=null && line !=""){
@@ -731,6 +866,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		tableUpdate();
 
 		if (files != null && files.length>0) {
+			errorMessage("Enabling the upload and remove buttons");
 			upload.setEnabled(true);
 			remove.setEnabled(true);
 		}

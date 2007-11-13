@@ -208,7 +208,26 @@ public class PostletLabels {
 				"Resim (imaj) dosyalarý",
 				"Yükleme için dosya seçin",
 				"The help URL provided is not a valid one.",
-				"The following files failed to upload"}}; //15
+				"The following files failed to upload"},
+				{
+				"EMPTY",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				""}}; //15
 
 	/** Creates a new instance of PostletLabels */
 	public PostletLabels(String l, URL codeBase) {
