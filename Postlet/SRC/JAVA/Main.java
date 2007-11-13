@@ -144,6 +144,29 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		} catch (java.util.TooManyListenersException tmle){
 			errorMessage( "Too many listeners to drop!");
 		}
+		// Table for the adding of Filenames and sizes to.
+		tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
+		table = new JTable(tabledata);
+		table.setColumnSelectionAllowed(false);
+		//table.setDragEnabled(false); // This method is not available to Java 3!
+		sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
+		sizeColumn.setMaxWidth(100);
+		table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
+		if (columnHeadColourBack != null && backgroundColour != null){
+			errorMessage( "setting the tables colours");
+			table.getTableHeader().setBackground(columnHeadColourBack);
+			table.getTableHeader().setForeground(columnHeadColourFore);
+			table.setBackground(backgroundColour);
+		}
+		scrollPane = new JScrollPane(table);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+		if (backgroundColour != null){
+			scrollPane.setBackground(backgroundColour);
+		}
+		// Always set the table background colour as White.
+		// May change this if required, only would require alot of Params!
+		scrollPane.getViewport().setBackground(Color.white);
 		
 		if (dropImageURL!=null){
 			// Instead of the table, we'll add a lovely image to the center
@@ -154,35 +177,12 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			pane.add(iconButton, BorderLayout.CENTER);			
 		}
 		else {
-			// Table for the adding of Filenames and sizes to.
-			tabledata = new TableData(pLabels.getLabel(0),pLabels.getLabel(1)+" -KB ");
-			table = new JTable(tabledata);
-			table.setColumnSelectionAllowed(false);
-			//table.setDragEnabled(false); // This method is not available to Java 3!
-			sizeColumn = table.getColumn(pLabels.getLabel(1)+" -KB ");
-			sizeColumn.setMaxWidth(100);
-			table.getColumn(pLabels.getLabel(1)+" -KB ").setMinWidth(100);
-			if (columnHeadColourBack != null && backgroundColour != null){
-				errorMessage( "setting the tables colours");
-				table.getTableHeader().setBackground(columnHeadColourBack);
-				table.getTableHeader().setForeground(columnHeadColourFore);
-				table.setBackground(backgroundColour);
-			}
-			scrollPane = new JScrollPane(table);
-			scrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-
-			if (backgroundColour != null){
-			    scrollPane.setBackground(backgroundColour);
-			}
-			// Always set the table background colour as White.
-			// May change this if required, only would require alot of Params!
-			scrollPane.getViewport().setBackground(Color.white);
-
 			// Add the scroll pane/table to the main pane
 			pane.add(scrollPane, BorderLayout.CENTER);
 		}
 		
 		if (helpButton || addButton || removeButton || uploadButton){
+			errorMessage("Adding button");
 			if (helpButton)
 				rightPanel = new JPanel(new GridLayout(4,1,10,10));
 			else
@@ -403,7 +403,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		try {
 			dropImage = getParameter("dropimage");
 			if (dropImage!=null)
-			    dropImageURL = new URL(dropImage);
+				dropImageURL = new URL(dropImage);
 		} catch(MalformedURLException urlexception){
 			try {
 				URL codeBase = getCodeBase();
