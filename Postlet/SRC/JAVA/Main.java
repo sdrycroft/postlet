@@ -743,7 +743,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				System.out.println(i+": "+dataFlavour[i].getSubType());*/
 				if (dataFlavour[i].isFlavorJavaFileListType()){
 					// Windows
-					System.out.println("Windows");
+					errorMessage("Windows D'n'D");
 					List listOfFiles = (List)trans.getTransferData(DataFlavor.javaFileListFlavor);
 					Iterator iter = listOfFiles.iterator();
 					while (iter.hasNext()) {
@@ -753,6 +753,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					filesFound = true;
 				} else if (dataFlavour[i].equals(uriListFlavor)){
 					// Linux
+					errorMessage("Linux (Mac?) D'n'D");
 					BufferedReader in = new BufferedReader(dataFlavour[i].getReaderForText(trans));
 					String line = in.readLine();
 					while(line!=null && line !=""){
