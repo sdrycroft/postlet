@@ -571,8 +571,8 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				iconLabel.setIcon(dropIcon);
 				repaint();
 			}
-			failedFiles.clear();
-			uploadedFiles.clear();
+			//failedFiles.clear();
+			//uploadedFiles.clear();
 		}
 	}
 
