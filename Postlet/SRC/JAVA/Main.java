@@ -69,7 +69,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private JScrollPane scrollPane;
 	private JPanel rightPanel;
 	private JButton add,remove,upload,help;
-	private ImageIcon dropIcon,dropIconUpload;	
+	private ImageIcon dropIcon,dropIconUpload,dropIconAdded;	
 	private TableData tabledata;
 	private TableColumn sizeColumn;
 	private File [] files;
@@ -87,9 +87,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private boolean javascript;
 
 	// Parameters
-	private URL endPageURL, helpPageURL, destinationURL,dropImageURL,dropImageUploadURL;
+	private URL endPageURL, helpPageURL, destinationURL,dropImageURL,dropImageUploadURL,dropImageAddedURL;
 	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton;
-	private String language,dropImage,dropImageUpload;
+	private String language, dropImage, dropImageAdded, dropImageUpload;
 	private int maxThreads;
 	private String [] fileExtensions;
 
@@ -172,7 +172,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		if (dropImageURL!=null){
 			// Instead of the table, we'll add a lovely image to the center
 			// of the applet to drop images on.
-			errorMessage("Attempting to use dropImageURL");
 			dropIcon = new ImageIcon(dropImageURL);
 			iconLabel = new JLabel(dropIcon);
 			pane.add(iconLabel, BorderLayout.CENTER);			
@@ -181,6 +180,10 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			// Add the scroll pane/table to the main pane
 			pane.add(scrollPane, BorderLayout.CENTER);
 		}
+		if (dropImageUploadURL!=null)
+			dropIconUpload = new ImageIcon(dropImageUploadURL);
+		if (dropImageAddedURL!=null)
+			dropIconAdded = new ImageIcon(dropImageAddedURL);
 
 		errorMessage("Adding button");
 		if (helpButton)
@@ -432,7 +435,20 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				errorMessage("dropimageupload is not a valid reference");
 			}
 		}
-
+		/* REPLACE TABLE WITH "DROP" IMAGE (ADDED IMAGE)*/
+		try {
+			dropImageAdded = getParameter("dropimageadded");
+			if (dropImageAdded!=null)
+				dropImageAddedURL = new URL(dropImageAdded);
+		} catch(MalformedURLException urlexception){
+			try {
+				URL codeBase = getCodeBase();
+				dropImageAddedURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImageAdded);
+			} catch(MalformedURLException urlexception2){
+				errorMessage("dropimageupload is not a valid reference");
+			}
+		}
+		
 		/* FAILED FILES WARNING */
 		// This should be set to false if failed files are being handled in
 		// javascript
@@ -497,7 +513,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			help.setEnabled(false);
 			upload.setEnabled(false);
 			if (dropImageURL!=null && dropImageUploadURL!=null){
-				dropIconUpload = new ImageIcon(dropImageUploadURL);
 				iconLabel.setIcon(dropIconUpload);
 				repaint();
 			}
@@ -646,7 +661,11 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 		if (files != null && files.length>0) {
 			upload.setEnabled(true);
-			remove.setEnabled(true);
+			remove.setEnabled(true);			
+			if (dropImageURL!=null && dropImageAddedURL!=null){
+				iconLabel.setIcon(dropIconAdded);
+				repaint();
+			}
 		}
 		if (files !=null && autoUpload){
 			uploadClick();
