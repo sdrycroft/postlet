@@ -796,6 +796,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		tableUpdate();
 
 		if (files != null && files.length>0) {
+			errorMessage("Enabling the upload and remove buttons");
 			upload.setEnabled(true);
 			remove.setEnabled(true);
 		}
