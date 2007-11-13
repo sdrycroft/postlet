@@ -180,7 +180,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			// Add the scroll pane/table to the main pane
 			pane.add(scrollPane, BorderLayout.CENTER);
 		}
-		
+
 		if (helpButton || addButton || removeButton || uploadButton){
 			errorMessage("Adding button");
 			if (helpButton)
