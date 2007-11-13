@@ -69,7 +69,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private JScrollPane scrollPane;
 	private JPanel rightPanel;
 	private JButton add,remove,upload,help;
-	private ImageIcon dropIcon;	
+	private ImageIcon dropIcon,dropIconUpload;	
 	private TableData tabledata;
 	private TableColumn sizeColumn;
 	private File [] files;
@@ -87,9 +87,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private boolean javascript;
 
 	// Parameters
-	private URL endPageURL, helpPageURL, destinationURL,dropImageURL;
+	private URL endPageURL, helpPageURL, destinationURL,dropImageURL,dropImageUploadURL;
 	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton;
-	private String language,dropImage;
+	private String language,dropImage,dropImageUpload;
 	private int maxThreads;
 	private String [] fileExtensions;
 
@@ -419,6 +419,19 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				errorMessage("dropimage is not a valid reference");
 			}
 		}
+		/* REPLACE TABLE WITH "DROP" IMAGE (UPLOAD IMAGE)*/
+		try {
+			dropImageUpload = getParameter("dropimageupload");
+			if (dropImageUpload!=null)
+				dropImageUploadURL = new URL(dropImageUpload);
+		} catch(MalformedURLException urlexception){
+			try {
+				URL codeBase = getCodeBase();
+				dropImageUploadURL = new URL(codeBase.getProtocol()+"://"+codeBase.getHost()+codeBase.getPath()+dropImageUpload);
+			} catch(MalformedURLException urlexception2){
+				errorMessage("dropimageupload is not a valid reference");
+			}
+		}
 
 		/* FAILED FILES WARNING */
 		// This should be set to false if failed files are being handled in
@@ -483,6 +496,10 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			remove.setEnabled(false);
 			help.setEnabled(false);
 			upload.setEnabled(false);
+			if (dropImageURL!=null && dropImageUploadURL!=null){
+				dropIconUpload = new ImageIcon(dropImageUploadURL);
+				iconLabel.setIcon(dropIconUpload);
+			}
 			sentBytes = 0;
 			progBar.setMaximum(totalBytes);
 			progBar.setMinimum(0);
@@ -534,6 +551,9 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			tableUpdate();
 			add.setEnabled(true);
 			help.setEnabled(true);
+			if (dropImageURL!=null && dropImageUploadURL!=null){
+				iconLabel.setIcon(dropIcon);
+			}
 			failedFiles.clear();
 			uploadedFiles.clear();
 		}
