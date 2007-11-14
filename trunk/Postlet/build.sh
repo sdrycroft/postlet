@@ -1,13 +1,11 @@
 #!/bin/bash
 echo "Have you put the correct version number in?"
-for i in $(ls -1 SRC/JAVA/*.java);do 
-	diff $i postlet-src/$i;
-done
+cp SRC/JAVA/*.java postlet-src/SRC/JAVA
 javac -g -d dist -source 1.3 -target 1.3 SRC/JAVA/*.java lib/netscape/javascript/*.java
 cd dist
 jar cvfm postlet.jar ../SRC/manifest *.class netscape/javascript/*.class > /dev/null
 rm -rf *.class netscape
-jarsigner -storepass leeds1 postlet.jar tstkey
+jarsigner -storepass password postlet.jar tstkey
 rm -rf ../postlet/postlet.jar
 cp postlet.jar ../postlet/
 cd ..
