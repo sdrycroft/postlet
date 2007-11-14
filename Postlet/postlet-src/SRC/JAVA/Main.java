@@ -504,7 +504,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	}
 
 	public void uploadClick() {
-		if(files.length>0) {
+		if(files != null && files.length>0) {
 			if (warnMessage){
 				JOptionPane.showMessageDialog(null, pLabels.getLabel(11), pLabels.getLabel(12), JOptionPane.INFORMATION_MESSAGE);
 			}
