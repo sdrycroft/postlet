@@ -40,7 +40,7 @@ public class JavascriptListener extends Thread{
 				 }
 			 }
 			 try{
-				 sleep(250);// Interval between checking for an event.
+				 sleep(100);// Interval between checking for an event.
 				 // This should be set as low as possible, without slowing down the
 				 // web browser/applet.
 			 }
