@@ -602,12 +602,14 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					}
 					progCompletion.setText(pLabels.getLabel(2));
 					if (endPageURL != null){
+						errorMessage("Changing browser page");
 						getAppletContext().showDocument(endPageURL);
 					} else {
 						try {
 							// Just ignore this error, as it is most likely from the endpage
 							// not being set.
 							// Attempt at calling Javascript after upload is complete.
+							errorMessage("Executing: "+postletJS[1]+"();");
 							jso.eval(postletJS[1]+"();");
 						}
 						catch (netscape.javascript.JSException jse){
