@@ -1,4 +1,4 @@
-/*  Copyright (C) 2005 Simon David Rycroft
+/*	Copyright (C) 2005 Simon David Rycroft
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -7,12 +7,12 @@
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. */
 
 import java.io.File;
 import java.net.*;
@@ -26,6 +26,7 @@ public class UploadManager extends Thread {
 	Main main;
 	URL destination;
 	private int maxThreads = 5;
+	private UploadThread upThreads[];
 
 	/** Creates a new instance of Upload */
 	public UploadManager(File [] f, Main m, URL d){
@@ -47,9 +48,15 @@ public class UploadManager extends Thread {
 		main = m;
 		destination = d;
 	}
+	
+	public void cancelUpload(){
+		for(int i=0;i<files.length;i++){
+			upThreads[i].cancelUpload();
+		}
+	}
 
 	public void run() {
-		UploadThread u[] = new UploadThread[files.length];
+		upThreads = new UploadThread[files.length];
 		for(int i=0; i<files.length; i+=maxThreads) {
 			//UploadThread u = new UploadThread(destination,files[i], main);
 			//u.upload();
@@ -57,14 +64,14 @@ public class UploadManager extends Thread {
 			while(j<maxThreads && (i+j)<files.length)
 			{
 				try{
-					u[i+j] = new UploadThread(destination,files[i+j], main);
-					u[i+j].start();}
+					upThreads[i+j] = new UploadThread(destination,files[i+j], main);
+					upThreads[i+j].start();}
 				catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
 				catch(IOException ioe)			{System.out.println("*** IOException: UploadManager ***");}
 				j++;
 			}
 			// wait for the last one to started to finish (means there may be others running still FIXME!
-			while(u[i+j-1].isAlive()){;}
+			while(upThreads[i+j-1].isAlive()){;}
 		}
 	}
 

@@ -2,7 +2,7 @@
  * $Id$
  */
 
-/*  Copyright (C) 2005 Simon David Rycroft
+/*	Copyright (C) 2005 Simon David Rycroft
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -11,12 +11,12 @@
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. */
 
 public class JavascriptListener extends Thread{
 
@@ -40,7 +40,7 @@ public class JavascriptListener extends Thread{
 				 }
 			 }
 			 try{
-				 sleep(250);// Interval between checking for an event.
+				 sleep(100);// Interval between checking for an event.
 				 // This should be set as low as possible, without slowing down the
 				 // web browser/applet.
 			 }

@@ -1,4 +1,4 @@
-/*  Copyright (C) 2005 Simon David Rycroft
+/*	Copyright (C) 2005 Simon David Rycroft
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -7,13 +7,15 @@
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. */
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. */
 
+import com.sun.java.browser.net.ProxyInfo;
+import com.sun.java.browser.net.ProxyService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedOutputStream;
@@ -27,7 +29,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.net.ssl.SSLContext;
 
-import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -54,6 +55,7 @@ public class UploadThread extends Thread{
 	private String boundary;
 	private Socket sock;
 	private boolean addPngToFileName;
+	private boolean doUpload;
 
 	public UploadThread(URL u, File f, Main m) throws IOException, UnknownHostException{
 
@@ -61,6 +63,7 @@ public class UploadThread extends Thread{
 		file = f;
 		main = m;
 		attempts = 0;
+		doUpload = true;
 	}
 
 	public void run(){
@@ -71,6 +74,7 @@ public class UploadThread extends Thread{
 			// A file has been moved or deleted. This file will NOT
 			// be uploaded.
 			// Set the progress to include this file.
+			main.fileNotFound(file);
 			main.setProgress((int)file.length());
 		}
 		catch (IOException ioe){
@@ -78,10 +82,13 @@ public class UploadThread extends Thread{
 			this.run();
 			// This could end up looping. Probably need to find out what could cause this.
 			// I guess I could count the number of attempts!
-			System.out.println("*** IOException: UploadThread ***");
+			main.errorMessage("IOException: UploadThread");
 		}
 	}
 
+	public void cancelUpload(){
+		doUpload = false;
+	}
 	private void upload() throws FileNotFoundException, IOException{
 
 		this.uploadFile();
@@ -96,12 +103,17 @@ public class UploadThread extends Thread{
 					this.upload();
 				}
 				else {
-					main.addFailedFile(file);
+					main.fileUploadFailed(file);
 					main.setProgress(finalByteSize);
 				}
 			} else {
+				if(reply.indexOf("POSTLET:FILE TYPE NOT ALLOWED")>0){
+					main.fileNotAllowed(file);
+				}
+				else {
+					main.fileUploadFailed(file);
+				}
 				attempts = 5;
-				main.addFailedFile(file);
 				main.setProgress(finalByteSize);
 			}
 		}
@@ -174,7 +186,7 @@ public class UploadThread extends Thread{
 		byte buffer [] = new byte[bufferSize];
 
 		int bytesRead = fileStream.read(buffer, 0, bufferSize);
-		while (bytesAvailable > 0)
+		while (bytesAvailable > 0 && doUpload)
 		{
 			output.write(buffer, 0, bufferSize);
 			if (bufferSize == maxBufferSize)
@@ -186,24 +198,25 @@ public class UploadThread extends Thread{
 			bytesRead = fileStream.read(buffer, 0, bufferSize);
 		}
 		///////////////////////////////////////////////////////////
+		if (doUpload){
+			output.writeBytes(footer);
+			output.writeBytes(lineEnd);
 
-		output.writeBytes(footer);
-		output.writeBytes(lineEnd);
+			output.flush();
 
-		output.flush();
-
-		try {
-			// Should be dynamically setting this.
-			wait(1000);
+			try {
+				// Should be dynamically setting this.
+				wait(1000);
+			}
+			catch (InterruptedException ie){
+				// Thread was interuppted, which means there was probably
+				// some output!
+			}
+			reply = rl.getRead();
+			main.errorMessage("REPLY");
+			main.errorMessage(reply);
+			main.errorMessage("END REPLY");
 		}
-		catch (InterruptedException ie){
-			// Thread was interuppted, which means there was probably
-			// some output!
-		}
-		reply = rl.getRead();
-		main.errorMessage("REPLY");
-		main.errorMessage(reply);
-		main.errorMessage("END REPLY");
 		// Close the socket and streams.
 		input.close();
 		output.close();
@@ -245,12 +258,36 @@ public class UploadThread extends Thread{
 			}
 		}
 		else {
+			try {
+				ProxyInfo info[] = ProxyService.getProxyInfo(url);
+				if(info != null && info.length>0){
+					String proxyHost = info[0].getHost();
+					int proxyPort = info[0].getPort();
+					main.errorMessage("PROXY = " + proxyHost + ":" + proxyPort);
+					return new Socket(proxyHost, proxyPort);
+				}
+			}catch (Exception ex) {
+				main.errorMessage("could not retrieve proxy configuration, attempting direct connection.");
+			}
 			Socket s;
 			String proxyHost = System.getProperties().getProperty("deployment.proxy.http.host");
 			String proxyPort = System.getProperties().getProperty("deployment.proxy.http.port");
 			String proxyType = System.getProperties().getProperty("deployment.proxy.type");
-			if ( (proxyHost == null || proxyType == null) ||
-					(proxyHost.equalsIgnoreCase("") || proxyType.equalsIgnoreCase("0") || proxyType.equalsIgnoreCase("2") || proxyType.equalsIgnoreCase("-1") )) {
+			if ( (proxyHost == null || proxyType == null) || (proxyHost.equalsIgnoreCase("") || proxyType.equalsIgnoreCase("0") || proxyType.equalsIgnoreCase("2") || proxyType.equalsIgnoreCase("-1") )){
+				if(!main.getProxy().equals("")){
+					String proxyParts[] = main.getProxy().split(":");
+					try{
+						s = new Socket(proxyParts[0],Integer.parseInt(proxyParts[1]));
+						main.errorMessage("Proxy (parameter) - "+proxyParts[0]+":"+proxyParts[1]);
+					}
+					catch (NumberFormatException badPort){
+						main.errorMessage("bad proxy parameter");
+						if (url.getPort()>0)
+							s = new Socket(url.getHost(),url.getPort());
+						else
+							s = new Socket(url.getHost(),80);						
+					}
+				}
 				if (url.getPort()>0)
 					s = new Socket(url.getHost(),url.getPort());
 				else
@@ -258,9 +295,7 @@ public class UploadThread extends Thread{
 			}
 			else{
 				// Show when a Proxy is being user.
-				System.out.println("PROXY HOST: "+proxyHost);
-				System.out.println("PROXY PORT: "+proxyPort);
-				System.out.println("PROXY TYPE: "+proxyType);
+				main.errorMessage("Proxy (browser) - "+proxyHost+" - "+proxyPort+" - "+proxyType);
 				try {
 					s = new Socket(proxyHost,Integer.parseInt(proxyPort));}
 				catch (NumberFormatException badPort){
@@ -268,6 +303,7 @@ public class UploadThread extends Thread{
 					// here (8080, 3128 ..), then default to trying the final one.
 					// This could possibly be causing problems, display of an
 					// error message is probably also a good idea.
+					main.errorMessage("bad proxy from browser");
 					if (url.getPort()>0)
 						s = new Socket(url.getHost(),url.getPort());
 					else
@@ -296,7 +332,7 @@ public class UploadThread extends Thread{
 				if	(currentPixels>maxPixels){
 					double reduceBy = Math.sqrt(maxPixels)/Math.sqrt(currentPixels);
 					int	newWidth=(int)Math.round(buf.getWidth()*reduceBy);
-					int	newHeigth=(int)Math.round(buf.getHeight()*reduceBy);							   
+					int	newHeigth=(int)Math.round(buf.getHeight()*reduceBy);
 					BufferedImage bufFinal=new BufferedImage(newWidth,newHeigth,BufferedImage.TYPE_INT_RGB);
 					Graphics2D g=(Graphics2D)bufFinal.getGraphics();
 					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
