@@ -38,6 +38,12 @@ public class JavascriptListener extends Thread{
 					 if (main.isUploadEnabled())
 					 main.uploadClick();
 				 }
+				 else if (main.getButtonClicked() == 2){
+					 main.cancelUpload();
+				 }
+				 else if (main.getButtonClicked() == 3){
+					 main.removeFile(main.getFileToRemove());
+				 }
 			 }
 			 try{
 				 sleep(100);// Interval between checking for an event.

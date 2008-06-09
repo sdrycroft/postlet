@@ -78,6 +78,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private PostletLabels pLabels;
 	private Vector failedFiles,uploadedFiles;
 	private UploadManager upMan;
+	private JFileChooser chooser;
 
 	// Default error PrintStream!
 	private PrintStream out = System.out;
@@ -88,7 +89,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	// Parameters
 	private URL endPageURL, helpPageURL, destinationURL,dropImageURL,dropImageUploadURL,dropImageAddedURL;
 	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton;
-	private String language, dropImage, dropImageAdded, dropImageUpload, proxy;
+	private String language, dropImage, dropImageAdded, dropImageUpload, proxy, fileToRemove;
 	private int maxThreads;
 	private String [] fileExtensions;
 
@@ -153,14 +154,35 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 		getParameters();// Also sets pLabels
 		layoutGui();
+		createChooser();
 		// Vector of failedFiles
 		failedFiles = new Vector();
 		uploadedFiles = new Vector();
 
 	}
 
+	private void createChooser(){
+		chooser = new JFileChooser();
+
+		progBar.setValue(0);
+		if (fileExtensions != null){
+			UploaderFileFilter filter = new UploaderFileFilter();
+			for (int i=1; i<fileExtensions.length; i++){
+				filter.addExtension(fileExtensions[i]);
+			}
+			filter.setDescription(fileExtensions[0]);
+			chooser.addChoosableFileFilter(filter);
+		}
+		else {
+			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
+		}
+
+		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		chooser.setMultiSelectionEnabled(true);
+		chooser.setDialogTitle(pLabels.getLabel(14));
+	}
 	private void layoutGui(){
-		JOptionPane.showMessageDialog(null, "This is a CVS version of Postlet, use with caution","CVS",JOptionPane.INFORMATION_MESSAGE);
+		//JOptionPane.showMessageDialog(null, "This is a CVS version of Postlet, use with caution","CVS",JOptionPane.INFORMATION_MESSAGE);
 		// Set the look of the applet
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -276,7 +298,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			add.setEnabled(false);
 	}
 
-	public void errorMessage(String message){
+	protected void errorMessage(String message){
 		out.println("*** "+message+" ***");
 	}
 	// Helper method for getting the parameters from the webpage.
@@ -574,14 +596,14 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 
-	public synchronized void setProgress(int a) {
+	protected synchronized void setProgress(int a) {
 		if(totalBytes>0){
 			sentBytes += a;
 			progBar.setValue(sentBytes);
 			if((sentBytes*100)/totalBytes>percentComplete){
 				percentComplete = (sentBytes*100)/totalBytes;
 				try {
-					jso.eval(postletJS[0]+"("+percentComplete+");");
+					jso.eval("try{"+postletJS[0]+"("+percentComplete+");}catch(e){;}");
 				} catch (netscape.javascript.JSException jseps){
 					errorMessage("Unable to send status to Javascript");
 				} catch (NullPointerException npe){
@@ -602,13 +624,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					}
 					progCompletion.setText(pLabels.getLabel(2));
 					if (endPageURL != null){
+						errorMessage("Changing browser page");
 						getAppletContext().showDocument(endPageURL);
 					} else {
 						try {
 							// Just ignore this error, as it is most likely from the endpage
 							// not being set.
 							// Attempt at calling Javascript after upload is complete.
-							jso.eval(postletJS[1]+"();");
+							errorMessage("Executing: "+postletJS[1]+"();");
+							jso.eval("try{"+postletJS[1]+"();}catch(e){;}");
 						}
 						catch (netscape.javascript.JSException jse){
 							// Not to worry, just means the end page and a postletFinished
@@ -702,25 +726,6 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	}
 
 	public void addClick() {
-		JFileChooser chooser = new JFileChooser();
-
-		progBar.setValue(0);
-		if (fileExtensions != null){
-			UploaderFileFilter filter = new UploaderFileFilter();
-			for (int i=1; i<fileExtensions.length; i++){
-				filter.addExtension(fileExtensions[i]);
-			}
-			filter.setDescription(fileExtensions[0]);
-			chooser.addChoosableFileFilter(filter);
-		}
-		else {
-			chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-		}
-
-		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		chooser.setMultiSelectionEnabled(true);
-		chooser.getSelectedFile();
-		chooser.setDialogTitle(pLabels.getLabel(14));
 		int returnVal = chooser.showOpenDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File [] tempFiles = chooser.getSelectedFiles();
@@ -766,7 +771,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				repaint();
 			}
 			try {
-				jso.eval(postletJS[2]+"('"+getfiles()+"');");
+				jso.eval("try{"+postletJS[2]+"('"+getFiles()+"');}catch(e){;}");
 			} catch(netscape.javascript.JSException jsepf){
 				errorMessage("Unable to send info about files added");
 			} catch(NullPointerException npe){
@@ -776,28 +781,29 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		if (files !=null && autoUpload){
 			uploadClick();
 		}
+		createChooser();// Not sure if this is necesary. FIXME
 	}
 	
 	public void fileTooBig(File f){
-		errorMessage("file too big: "+f.getName());
-		JOptionPane.showMessageDialog(null, ""+pLabels.getLabel(1)+" - "+f.getName(), ""+pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
+		errorMessage("file too big: "+f.getName()+" - "+f.length());
+		if(warnMessage){
+			JOptionPane.showMessageDialog(null, ""+pLabels.getLabel(1)+" - "+f.getName(), ""+pLabels.getLabel(5), JOptionPane.ERROR_MESSAGE);
+		}
 		addFailedFile(f);
 		try{
-			jso.eval(postletJS[3]+"(0,'"+f.getName()+"');");
+			jso.eval("try{"+postletJS[3]+"(0,'"+f.getName().replace("'","`")+"');}catch(e){;}");
 		} catch(netscape.javascript.JSException jsepf){
 			errorMessage("Unable to send info about 'file too big'");
 		} catch(NullPointerException npe){
 			errorMessage("Unable to send info about 'file too big'");
 		}
 	}
-	
-	
-	
+		
 	public void fileNotAllowed(File f){
 		errorMessage("file not allowed: "+f.getName());
 		addFailedFile(f);
 		try{
-			jso.eval(postletJS[3]+"(1,'"+f.getName()+"');");
+			jso.eval("try{"+postletJS[3]+"(1,'"+f.getName().replace("'","`")+"');}catch(e){;}");
 		} catch(netscape.javascript.JSException jsepf){
 			errorMessage("Unable to send info about 'file not allowed'");
 		}
@@ -807,7 +813,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		errorMessage("file not found: "+f.getName());
 		addFailedFile(f);
 		try{
-			jso.eval(postletJS[3]+"(2,'"+f.getName()+"');");
+			jso.eval("try{"+postletJS[3]+"(2,'"+f.getName().replace("'","`")+"');}catch(e){;}");
 		} catch(netscape.javascript.JSException jsepf){
 			errorMessage("Unable to send info about 'file not found'");
 		} catch(NullPointerException npe){
@@ -819,7 +825,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		errorMessage("file upload failed: "+f.getName());
 		addFailedFile(f);
 		try{
-			jso.eval(postletJS[3]+"(3,'"+f.getName()+"');");
+			jso.eval("try{"+postletJS[3]+"(3,'"+f.getName().replace("'","`")+"');}catch(e){;}");
 		} catch(netscape.javascript.JSException jsepf){
 			errorMessage("Unable to send info about 'file upload failed'");
 		} catch(NullPointerException npe){
@@ -846,7 +852,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		// Method reads the cookie in from the Browser using the LiveConnect object.
 		// May also add an option to set the cookie using an applet parameter FIXME!
 		try {
-			return ""+(String)jso.eval("document.cookie");
+			return ""+(String)jso.eval("try{document.cookie;}catch(e){;}");
 		}
 		catch (Exception e){
 			return "";
@@ -856,7 +862,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	/**
 	 * Cancel all upload of files.
 	 */
-	public void cancelupload(){
+	public void cancelUpload(){
 		upMan.cancelUpload();
 		errorMessage("Canceled upload");
 		if(totalBytes>0){
@@ -867,7 +873,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	 * This method has been altered due to IE (and Safari) being shite
 	 * (it did return an array - oh well, backwards stepping).
 	 */
-	public String getfailedfiles(){
+	public String getFailedFiles(){
 		if (failedFiles.size()>0){
 			String failedFilesString = "";
 			// Return a "/" delimited string (as "/" is not a legal character).
@@ -875,7 +881,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				File tempFile = (File)failedFiles.elementAt(i);
 				failedFilesString += tempFile.getName()+"/";
 			}
-			return failedFilesString;
+			return failedFilesString.replace("'","`");
 			/*
 			String [] arrayFailedFiles = new String[failedFiles.size()];
 			for (int i=0; i<failedFiles.size(); i++){
@@ -891,15 +897,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	/**
 	 * This method returns all the files that have been added to Postlet
 	 */
-	public String getfiles(){
+	public String getFiles(){
 		String fileString = ""+files.length;
 		for(int i=0; i<files.length; i++){
 			fileString += "/"+files[i].getName();
 		}
-		return fileString;
+		return fileString.replace("'","`");
 	}
 
-	public String getuploadedfiles(){
+	public String getUploadedFiles(){
 		if (uploadedFiles.size()>0){
 			String uploadedFilesString = "";
 			// Return a "/" delimited string (as "/" is not a legal character).
@@ -907,7 +913,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				File tempFile = (File)uploadedFiles.elementAt(i);
 				uploadedFilesString += tempFile.getName()+"/";
 			}
-			return uploadedFilesString;
+			return uploadedFilesString.replace("'","`");
 			/*
 			String [] arrayUploadedFiles = new String[uploadedFiles.size()];
 			for (int i=0; i<uploadedFiles.size(); i++){
@@ -920,7 +926,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		return null;
 	}
 	
-	public void changedestination(String destination){
+	public void changedDestination(String destination){
 		// Change the destination before upload.
 		try {
 			destinationURL = new URL(destination);
@@ -935,7 +941,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 	
-	public void javascriptRemoveFile(String number){
+	protected void doRemoveFile(String number){
 		try {
 			int fileNumber = Integer.parseInt(number);
 			if(files.length>fileNumber && fileNumber>-1){
@@ -954,21 +960,41 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					remove.setEnabled(false);
 				}
 			}
+			try {
+				jso.eval("try{"+postletJS[2]+"('"+getFiles()+"');}catch(e){;}");
+			} catch(netscape.javascript.JSException jsepf){
+				errorMessage("Unable to send info about files added");
+			} catch(NullPointerException npe){
+				errorMessage("Unable to send info about files added");
+			}
 		} catch (NumberFormatException nfe){
-			errorMessage("javascriptRemoveFile not a number");
+			errorMessage("removeFile not a number");
 		}
 	}
 
-	public void javascriptAddClicked(){
+	public void postletAdd(){
 
 		// Set a variable so that the listening thread can call the add click method
 		buttonClicked = 0;
 		javascript = true;
 	}
-	public void javascriptUploadClicked(){
-
+	public void removeFile(String number){
+		// As above
+		buttonClicked = 3;
+		fileToRemove = number;
+		javascript = true;
+	}
+	public String getFileToRemove(){
+		return fileToRemove;
+	}
+	public void postletUpload(){
 		// As above
 		buttonClicked = 1;
+		javascript = true;
+	}
+	public void postletCancel(){
+		// As above
+		buttonClicked = 2;
 		javascript = true;
 	}
 	public boolean getJavascriptStatus(){

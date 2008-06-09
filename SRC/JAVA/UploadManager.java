@@ -27,12 +27,14 @@ public class UploadManager extends Thread {
 	URL destination;
 	private int maxThreads = 5;
 	private UploadThread upThreads[];
+	private boolean cancelUpload;
 
 	/** Creates a new instance of Upload */
 	public UploadManager(File [] f, Main m, URL d){
 		files = f;
 		main = m;
 		destination = d;
+		cancelUpload = false;
 	}
 
 	public UploadManager(File [] f, Main m, URL d, int max){
@@ -50,28 +52,35 @@ public class UploadManager extends Thread {
 	}
 	
 	public void cancelUpload(){
+		cancelUpload = true;
 		for(int i=0;i<files.length;i++){
-			upThreads[i].cancelUpload();
+			try {
+				upThreads[i].cancelUpload();
+			} catch (NullPointerException npe){
+				main.errorMessage("Cancelled unknown");//No need really to do anything here
+			}
 		}
 	}
 
 	public void run() {
 		upThreads = new UploadThread[files.length];
 		for(int i=0; i<files.length; i+=maxThreads) {
-			//UploadThread u = new UploadThread(destination,files[i], main);
-			//u.upload();
-			int j=0;
-			while(j<maxThreads && (i+j)<files.length)
-			{
-				try{
-					upThreads[i+j] = new UploadThread(destination,files[i+j], main);
-					upThreads[i+j].start();}
-				catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
-				catch(IOException ioe)			{System.out.println("*** IOException: UploadManager ***");}
-				j++;
+			if(!cancelUpload){
+				//UploadThread u = new UploadThread(destination,files[i], main);
+				//u.upload();
+				int j=0;
+				while(j<maxThreads && (i+j)<files.length)
+				{
+					try{
+						upThreads[i+j] = new UploadThread(destination,files[i+j], main);
+						upThreads[i+j].start();}
+					catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
+					catch(IOException ioe)			{System.out.println("*** IOException: UploadManager ***");}
+					j++;
+				}
+				// wait for the last one to started to finish (means there may be others running still FIXME!
+				while(upThreads[i+j-1].isAlive()){;}
 			}
-			// wait for the last one to started to finish (means there may be others running still FIXME!
-			while(upThreads[i+j-1].isAlive()){;}
 		}
 	}
 
