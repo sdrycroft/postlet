@@ -1,7 +1,0 @@
-To build postlet, simply execute the build.sh script.
-
-This requires a JDK>1.3, and that the binary files are
-in your path.
-It also requires you to have created a Certificate using
-the "keytool" supplied with the SUN jdk.  The certificate
-should be named tstkey.
