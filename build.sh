@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # JDK bin directory
-JDKBIN=/usr/java/jdk1.6.0_04/bin
+JDKBIN=/usr/java/default/bin
 
 # Reminder to insert the correct version number
 # echo "Have you put the correct version number in?"
 
 # Compile the .java files
-$JDKBIN/javac -g -d dist -source 1.3 -target 1.3 SRC/JAVA/*.java -classpath /usr/java/jre1.6.0_06/lib/plugin.jar
+$JDKBIN/javac -g -d dist -source 1.3 -target 1.3 SRC/JAVA/*.java -classpath /usr/java/default/jre/lib/plugin.jar
 
 # move into the compiled folder, and package it up
 cd dist
