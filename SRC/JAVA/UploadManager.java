@@ -17,27 +17,27 @@
 import java.io.File;
 import java.net.*;
 import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
 
 // Note, the upload manager extends Thread so that the GUI is
 // still responsive, and updates.
 public class UploadManager extends Thread {
 
-	File [] files;
+	SplitFile [] files;
 	Main main;
 	URL destination;
 	private int maxThreads = 5;
-	private UploadThread upThreads[];
-	private boolean cancelUpload;
+	ExecutorService threadpool = null;
 
 	/** Creates a new instance of Upload */
-	public UploadManager(File [] f, Main m, URL d){
+	public UploadManager(SplitFile [] f, Main m, URL d){
 		files = f;
 		main = m;
 		destination = d;
-		cancelUpload = false;
 	}
 
-	public UploadManager(File [] f, Main m, URL d, int max){
+	public UploadManager(SplitFile [] f, Main m, URL d, int max){
 		try {
 			if (max>5 || max < 1)
 				max = 5;
@@ -52,35 +52,36 @@ public class UploadManager extends Thread {
 	}
 	
 	public void cancelUpload(){
-		cancelUpload = true;
-		for(int i=0;i<files.length;i++){
-			try {
-				upThreads[i].cancelUpload();
-			} catch (NullPointerException npe){
-				main.errorMessage("Cancelled unknown");//No need really to do anything here
-			}
-		}
+		// if there is a threadpool, shut it down
+		if(threadpool != null)
+			threadpool.shutdownNow();
 	}
 
-	public void run() {
-		upThreads = new UploadThread[files.length];
-		for(int i=0; i<files.length; i+=maxThreads) {
-			if(!cancelUpload){
-				//UploadThread u = new UploadThread(destination,files[i], main);
-				//u.upload();
-				int j=0;
-				while(j<maxThreads && (i+j)<files.length)
-				{
-					try{
-						upThreads[i+j] = new UploadThread(destination,files[i+j], main);
-						upThreads[i+j].start();}
-					catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
-					catch(IOException ioe)			{System.out.println("*** IOException: UploadManager ***");}
-					j++;
-				}
-				// wait for the last one to started to finish (means there may be others running still FIXME!
-				while(upThreads[i+j-1].isAlive()){;}
+	public void run()
+	{
+		// create a threadpool to run these threads
+		threadpool = Executors.newFixedThreadPool(maxThreads);
+		try
+		{
+			// submit the tasks to this pool
+			for(int i=0; i<files.length; i++)
+			{
+				// add one thread for each chunk
+				for(int j=0; j<files[i].getChunkCount(); j++)
+					threadpool.execute(new UploadTask(destination, files[i], j, main));
 			}
+
+			// do not accept more tasks
+			threadpool.shutdown();
+
+			// wait until all tasks are complete
+			while(!threadpool.awaitTermination(1, TimeUnit.SECONDS));
+		}
+		catch(UnknownHostException uhe) {System.out.println("*** UnknownHostException: UploadManager ***");}
+		catch(IOException ioe)          {System.out.println("*** IOException: UploadManager ***");}
+		catch(InterruptedException ie) {
+				// force a shutdown
+				threadpool.shutdownNow();
 		}
 	}
 

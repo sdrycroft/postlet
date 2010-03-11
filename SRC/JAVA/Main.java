@@ -70,7 +70,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	private ImageIcon dropIcon,dropIconUpload,dropIconAdded;	
 	private TableData tabledata;
 	private TableColumn sizeColumn;
-	private File [] files;
+	private SplitFile [] files;
 	private JLabel progCompletion,iconLabel;
 	private JProgressBar progBar;
 	private int sentBytes,totalBytes,buttonClicked,maxPixels,percentComplete,maxFileSize;
@@ -88,7 +88,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 	// Parameters
 	private URL endPageURL, helpPageURL, destinationURL,dropImageURL,dropImageUploadURL,dropImageAddedURL;
-	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton;
+	private boolean warnMessage,autoUpload,helpButton,failedFileMessage,addButton,removeButton,uploadButton,splitFiles;
 	private String language, dropImage, dropImageAdded, dropImageUpload, proxy, fileToRemove;
 	private int maxThreads;
 	private String [] fileExtensions;
@@ -548,11 +548,22 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			errorMessage( "maxpixels is null");
 		} catch (NumberFormatException nummaxpixels){
 			errorMessage( "maxpixels is not a number");}
+
+		/* SPLIT UPLOADS */
+		try {
+			if (getParameter("splitfiles").toLowerCase().trim().equals("false"))
+				splitFiles = false;
+			else
+				splitFiles = true;
+		} catch(NullPointerException nullwarnmessage){
+			errorMessage( "splitfiles is null");
+			splitFiles = false;
+		}
 	}
 	
 	private void removeClick() {
 		if(table.getSelectedRowCount()>0) {
-			File [] fileTemp = new File[files.length-table.getSelectedRowCount()];
+			SplitFile [] fileTemp = new SplitFile[files.length-table.getSelectedRowCount()];
 			int [] selectedRows = table.getSelectedRows();
 			Arrays.sort(selectedRows);
 			int k=0;
@@ -649,7 +660,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				totalBytes = 0;
 				percentComplete = 0;
 				progBar.setValue(0);
-				files = new File[0];
+				files = new SplitFile[0];
 				tableUpdate();
 				add.setEnabled(true);
 				help.setEnabled(true);
@@ -681,8 +692,10 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 
 	// Adds a file that HAS uploaded to an array. These are passed along with
 	// failed files to a javascript method.
-	public void addUploadedFile(File f){
-		uploadedFiles.add(f);
+	public void addUploadedFile(SplitFile sf){
+		// Only add if ALL chunks have been uploaded
+		if(sf.getRemaining() == 0)
+			uploadedFiles.add(sf.getFile());
 	}
 
 	public int getMaxPixels(){
@@ -706,16 +719,16 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		String [] filenames = new String[files.length];
 		int [] fileSize = new int[files.length];
 		for(int i=0; i<files.length; i++) {
-			filenames[i] = files[i].getAbsolutePath();
-			fileSize[i] = (int)files[i].length();
-			totalBytes += (int)files[i].length();
+			filenames[i] = files[i].getFile().getAbsolutePath();
+			fileSize[i] = (int)files[i].getFile().length();
+			totalBytes += (int)files[i].getFile().length();
 		}
 		int i=0;
 		// FIXME - THIS SEEMS SILLY!********************************************
 		String [][] rowData = new String[files.length][2];
 		while(i<files.length) {
-			rowData[i][0] = files[i].getName();
-			rowData[i][1] = ""+files[i].length();
+			rowData[i][0] = files[i].getFile().getName();
+			rowData[i][1] = ""+files[i].getFile().length();
 			i++;
 		}
 		// *********************************************************************
@@ -735,7 +748,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					File [] subDirFiles = tempFiles[i].listFiles();
 					for (int j = 0; j<subDirFiles.length; j++){
 						if (subDirFiles[j].isFile()){
-							if(subDirFiles[j].length()<maxFileSize){
+							if(splitFiles || subDirFiles[j].length()<maxFileSize){
 								filesForUpload.add(subDirFiles[j]);
 							} else {
 								fileTooBig(subDirFiles[j]);
@@ -744,7 +757,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 					}
 
 				} else {
-					if(tempFiles[i].length()<maxFileSize){
+					if(splitFiles || tempFiles[i].length()<maxFileSize){
 						filesForUpload.add(tempFiles[i]);
 					} else {
 						fileTooBig(tempFiles[i]);
@@ -752,15 +765,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 				}
 			}
 			if (files == null){
-				files = new File[0];
+				files = new SplitFile[0];
 			}
-			tempFiles = new File[filesForUpload.size()+files.length];
+			SplitFile[] tempSplitFiles = new SplitFile[filesForUpload.size()+files.length];
 			for (int i=0; i<files.length; i++)
-				tempFiles[i] = files[i];
+				tempSplitFiles[i] = files[i];
 			for (int i=0; i<filesForUpload.size(); i++){
-				tempFiles[i+files.length] = (File)filesForUpload.elementAt(i);
+				tempSplitFiles[i+files.length] = new SplitFile((File)filesForUpload.elementAt(i), maxFileSize);
 			}
-			files = tempFiles;
+			files = tempSplitFiles;
 			tableUpdate();
 		}
 		if (files != null && files.length>0) {
@@ -799,7 +812,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 		
-	public void fileNotAllowed(File f){
+	public void fileNotAllowed(SplitFile sf){
+		// Don't process if it already was processed
+		if(sf.getStatus() != SplitFile.STATUS_OK)
+			return;
+
+		// Tag this file as not allowed to prevent further uploads of other chunks
+		sf.setStatus(SplitFile.STATUS_NOT_ALLOWED);
+
+		File f = sf.getFile();
 		errorMessage("file not allowed: "+f.getName());
 		addFailedFile(f);
 		try{
@@ -809,7 +830,16 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 	
-	public void fileNotFound(File f){
+	public void fileNotFound(SplitFile sf){
+		// Don't process if it already was processed
+		if(sf.getStatus() != SplitFile.STATUS_OK)
+			return;
+
+		// Tag this file as not found to prevent further uploads of other chunks
+		sf.setStatus(SplitFile.STATUS_NOT_FOUND);
+
+		File f = sf.getFile();
+		setProgress((int)f.length());
 		errorMessage("file not found: "+f.getName());
 		addFailedFile(f);
 		try{
@@ -821,7 +851,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		}
 	}
 	
-	public void fileUploadFailed(File f){
+	public void fileUploadFailed(SplitFile sf){
+		// Don't process if it already was processed
+		if(sf.getStatus() != SplitFile.STATUS_OK)
+			return;
+
+		// Tag this file as failed to prevent further uploads of other chunks
+		sf.setStatus(SplitFile.STATUS_FAILED);
+
+		File f = sf.getFile();
 		errorMessage("file upload failed: "+f.getName());
 		addFailedFile(f);
 		try{
@@ -904,7 +942,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 	public String getFiles(){
 		String fileString = ""+files.length;
 		for(int i=0; i<files.length; i++){
-			fileString += "/"+files[i].getName();
+			fileString += "/"+files[i].getFile().getName();
 		}
 		return fileString.replace("'","`");
 	}
@@ -949,7 +987,7 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 		try {
 			int fileNumber = Integer.parseInt(number);
 			if(files.length>fileNumber && fileNumber>-1){
-				File [] fileTemp = new File[files.length-1];
+				SplitFile [] fileTemp = new SplitFile[files.length-1];
 				int j=0;
 				for(int i=0;i<files.length;i++){
 					if(i!=fileNumber){
@@ -1093,15 +1131,15 @@ public class Main extends JApplet implements MouseListener, DropTargetListener {
 			filesForUpload.add(tempFiles[j]);
 		}
 		if (files == null){
-			files = new File[0];
+			files = new SplitFile[0];
 		}
-		tempFiles = new File[filesForUpload.size()+files.length];
+		SplitFile[] tempSplitFiles = new SplitFile[filesForUpload.size()+files.length];
 		for (int j=0; j<files.length; j++)
-			tempFiles[j] = files[j];
+			tempSplitFiles[j] = files[j];
 		for (int j=0; j<filesForUpload.size(); j++){
-			tempFiles[j+files.length] = (File)filesForUpload.elementAt(j);
+			tempSplitFiles[j+files.length] = new SplitFile((File)filesForUpload.elementAt(j), maxFileSize);
 		}
-		files = tempFiles;
+		files = tempSplitFiles;
 		tableUpdate();
 
 		if (files != null && files.length>0) {

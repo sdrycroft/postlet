@@ -22,9 +22,9 @@ public class ReadLine extends Thread {
 	BufferedReader input;
 	String read;
 	private static final String newLine = "\n";
-	UploadThread parent;
+	UploadTask parent;
 
-	public ReadLine (BufferedReader i, UploadThread p){
+	public ReadLine (BufferedReader i, UploadTask p){
 
 		parent = p;
 		input = i;

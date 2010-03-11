@@ -17,7 +17,6 @@
 import com.sun.java.browser.net.ProxyInfo;
 import com.sun.java.browser.net.ProxyService;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -42,9 +41,10 @@ import java.awt.RenderingHints;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 
-public class UploadThread extends Thread{
+public class UploadTask implements Runnable{
 
-	private File file;
+	private SplitFile file;
+	private int chunk;
 	private Main main;
 	private int attempts, finalByteSize;
 	private static final String lotsHyphens="---------------------------";
@@ -55,18 +55,21 @@ public class UploadThread extends Thread{
 	private String boundary;
 	private Socket sock;
 	private boolean addPngToFileName;
-	private boolean doUpload;
 
-	public UploadThread(URL u, File f, Main m) throws IOException, UnknownHostException{
+	public UploadTask(URL u, SplitFile f, int c, Main m) throws IOException, UnknownHostException{
 
 		url = u;
 		file = f;
+		chunk = c;
 		main = m;
 		attempts = 0;
-		doUpload = true;
 	}
 
 	public void run(){
+		// If this file has already failed on a previous part, don't even try it
+		if(file.getStatus() != SplitFile.STATUS_OK)
+			return;
+
 		try {
 			upload();
 		}
@@ -74,21 +77,19 @@ public class UploadThread extends Thread{
 			// A file has been moved or deleted. This file will NOT
 			// be uploaded.
 			// Set the progress to include this file.
+			// Check the notfound flag to see if this file (in a previous chunk) has already been processed
 			main.fileNotFound(file);
-			main.setProgress((int)file.length());
+			//main.setProgress((int)file.getFile().length());
 		}
 		catch (IOException ioe){
 			// No idea what could have caused this, so simply call this.run() again.
 			this.run();
 			// This could end up looping. Probably need to find out what could cause this.
 			// I guess I could count the number of attempts!
-			main.errorMessage("IOException: UploadThread");
+			main.errorMessage("IOException: UploadTask");
 		}
 	}
 
-	public void cancelUpload(){
-		doUpload = false;
-	}
 	private void upload() throws FileNotFoundException, IOException{
 
 		this.uploadFile();
@@ -97,7 +98,7 @@ public class UploadThread extends Thread{
 			if (reply.indexOf("POSTLET:RETRY")>0){
 				reply = "";
 				if (attempts<3) {
-					main.setProgress(-(int)file.length());
+					main.setProgress(-(int)file.getChunkSize(chunk));
 					main.setProgress(finalByteSize); // Has to be added after whole file is removed.
 					attempts++;
 					this.upload();
@@ -118,6 +119,9 @@ public class UploadThread extends Thread{
 			}
 		}
 		else {
+			// One less chunk to upload
+			file.decRemaining();
+
 			// Set the progress, that this file has uploaded.
 			main.addUploadedFile(file);
 			main.setProgress(finalByteSize);
@@ -129,6 +133,8 @@ public class UploadThread extends Thread{
 		// Get the file stream first, as this is needed for the content-length
 		// header.
 		this.setInputStream();
+		if(fileStream == null)
+			return; // FIXME: probably needs a much nicer error instead of ... none
 		
 		sock = getSocket();
 
@@ -172,7 +178,7 @@ public class UploadThread extends Thread{
 		//FileInputStream fileStream = new FileInputStream(file);
 		int numBytes = 0;
 
-		if (file.length()>Integer.MAX_VALUE){
+		if (file.getChunkSize(chunk)>Integer.MAX_VALUE){
 			throw new IOException("*** FILE TOO BIG ***");
 		}
 
@@ -186,7 +192,7 @@ public class UploadThread extends Thread{
 		byte buffer [] = new byte[bufferSize];
 
 		int bytesRead = fileStream.read(buffer, 0, bufferSize);
-		while (bytesAvailable > 0 && doUpload)
+		while (bytesAvailable > 0)
 		{
 			output.write(buffer, 0, bufferSize);
 			if (bufferSize == maxBufferSize)
@@ -198,36 +204,35 @@ public class UploadThread extends Thread{
 			bytesRead = fileStream.read(buffer, 0, bufferSize);
 		}
 		///////////////////////////////////////////////////////////
-		if (doUpload){
-			output.writeBytes(footer);
-			output.writeBytes(lineEnd);
+		output.writeBytes(footer);
+		output.writeBytes(lineEnd);
 
-			output.flush();
+		output.flush();
 
-			try {
-				// Should be dynamically setting this.
-				wait(1000);
-			}
-			catch (InterruptedException ie){
-				// Thread was interuppted, which means there was probably
-				// some output!
-			}
-			reply = rl.getRead();
-			main.errorMessage("REPLY");
-			main.errorMessage(reply);
-			main.errorMessage("END REPLY");
+		try {
+			// Should be dynamically setting this.
+			wait(1000);
 		}
+		catch (InterruptedException ie){
+			// Thread was interuppted, which means there was probably
+			// some output!
+		}
+		reply = rl.getRead();
+		main.errorMessage("REPLY");
+		main.errorMessage(reply);
+		main.errorMessage("END REPLY");
+
 		// Close the socket and streams.
 		input.close();
 		output.close();
 		sock.close();
 	}
 
-	// Each UploadThread gets a new Socket.
+	// Each UploadTask gets a new Socket.
 	// This is bad, especially when talking to HTTP/1.1 servers
 	// which are able to keep a connection alive. May change this
 	// to have the UploadManager create the threads, and reuse them
-	// passing them to each of the UploadThreads.
+	// passing them to each of the UploadTasks.
 	private Socket getSocket() throws IOException, UnknownHostException{
 		if (url.getProtocol().equalsIgnoreCase("https")){
 			// Create a trust manager that does not validate certificate chains
@@ -317,16 +322,17 @@ public class UploadThread extends Thread{
 	
 	private void setInputStream() throws FileNotFoundException{
 		//check	if the file is an image from its extention
-		String fileExt = file.getName();
+		String fileExt = file.getFile().getName();
 		fileExt=fileExt.substring(fileExt.lastIndexOf(".")+1);
 		
 		// If file is an image supported by Java (Currently only JPEG, GIF and PNG)
-		if((fileExt.equalsIgnoreCase("gif")
+		if(file.getChunkCount() == 1 &&
+			 (fileExt.equalsIgnoreCase("gif")
 			||fileExt.equalsIgnoreCase("jpg")
 			||fileExt.equalsIgnoreCase("jpeg")
 			||fileExt.equalsIgnoreCase("png")) && main.getMaxPixels()>0){
 			try	{
-				BufferedImage buf=ImageIO.read(file);
+				BufferedImage buf=ImageIO.read(file.getFile());
 				int currentPixels = buf.getWidth()*buf.getHeight();
 				int maxPixels = main.getMaxPixels();				
 				if	(currentPixels>maxPixels){
@@ -351,22 +357,38 @@ public class UploadThread extends Thread{
 					
 					// Set the progress to increase by the amount that the image
 					// is reduced in size
-					main.setProgress((int)file.length()-baos.size());
+					main.setProgress((int)file.getFile().length()-baos.size());
 					fileStream = new ByteArrayInputStream(baos.toByteArray());
 				}
 				else{
 					//if image don't need resize
-					fileStream = new FileInputStream(file);
+					fileStream = new SplitFileInputStream(file, chunk);
 				}
 			}
 			catch (IOException e){
 				// Error somewhere
-				fileStream = new FileInputStream(file);
+				try
+				{
+					fileStream = new SplitFileInputStream(file, chunk);
+				}
+				catch(IOException e2)
+				{
+					// Forget it
+					fileStream = null;
+				}
 			}
 		}
 		else{
 			//if the file is not an image, or maxPixels is not set
-			fileStream = new FileInputStream(file);
+			try
+			{
+				fileStream = new SplitFileInputStream(file, chunk);
+			}
+			catch(IOException e)
+			{
+				// Forget it
+				fileStream = null;
+			}
 		}
 	}
 
@@ -389,8 +411,19 @@ public class UploadThread extends Thread{
 		// AfterContent is what is sent after the Content-Length header field,
 		// but before the file itself. The length of this, is what is required
 		// by the content-length header (along with the length of the file).
-		afterContent = lotsHyphens +"--"+ boundary + lineEnd +
-									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getName();
+		// add chunk information first, which can be retrieved through $_POST in PHP
+		afterContent = lotsHyphens +"--" + boundary + lineEnd +
+									"Content-Disposition: form-data; name=\"chunk\"" + lineEnd + lineEnd +
+									chunk + lineEnd;
+
+		// add total chunk count
+		afterContent += lotsHyphens+"--" + boundary + lineEnd +
+									"Content-Disposition: form-data; name=\"totalchunks\"" + lineEnd + lineEnd +
+									file.getChunkCount() + lineEnd;
+
+		// add file info
+		afterContent += lotsHyphens+"--"+ boundary + lineEnd +
+									"Content-Disposition: form-data; name=\"userfile\"; filename=\""+file.getFile().getName();
 		if (addPngToFileName)
 			afterContent += ".png";
 		afterContent += "\""+lineEnd+
