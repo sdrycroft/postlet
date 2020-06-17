@@ -1,0 +1,15 @@
+<!--- The following file enables the uploading of each image from the java applet. --->
+
+<cfdump var="RECEIVING"/>
+
+<cfset uploaddir = "[PATH TO UPLOAD DIRECTORY]"/>
+
+<cftry>
+	<cffile action="upload" filefield="userfile" destination="#uploaddir#" nameconflict="overwrite"/>
+	<cfdump var="YES"/>
+	<cfcatch type="any">
+		<cfdump var="NO"/>
+		<cfdump var="#userfile#"/>
+		<cfabort>
+	</cfcatch>
+</cftry>

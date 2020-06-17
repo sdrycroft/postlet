@@ -1,0 +1,121 @@
+body {
+	background-image: url('images/body-background.jpg');
+	background-position: 50% 0;
+	background-repeat: repeat-y;
+	color: black;
+	background-color: #f5f5f5;
+	margin: 0;
+	font-family: Gill, Helvetica, sans-serif;
+	text-align: justify;
+	font-size: 10pt;
+}
+p.highlight {
+	padding: 5px;
+	background-color: white;
+	color: black;
+	border: solid 1px black;
+}
+a{
+	color: white;
+}
+h1{
+	font-size: 130%;
+	font-weight: 900;
+}
+h2{font-size: 120%}
+h3{font-size: 110%}
+div.header {
+	background-image: url('images/header-small.jpg');
+	background-position: 50% 0;
+	background-repeat: no-repeat;
+	margin: 0;
+	padding: 0;
+	height: 210px;
+	margin-top: 80px;
+	width: 100%;
+	text-align: center;
+}
+div.header-container {
+	width: 800px;
+	margin-left:auto;
+	margin-right:auto;
+	text-align: justify;
+}
+div.header-news{
+	margin: 0 0 0 520px;
+	padding: 30px 20px 10px 0;
+	color: #ddd;
+	font-size: 90%;
+}
+div.header-news h1 {
+	margin: 5px 0 0 0;
+	padding: 0;
+}
+div.container{
+	background-image:url('images/background.jpg');
+	background-position: 50% 0;
+	background-repeat: repeat-y;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+div.content{
+	width: 760px;
+	padding: 20px 0;
+	margin: 0px;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: justify;
+}
+div.adverts {
+	position: absolute;
+	margin-left:auto;
+	margin-right:auto;
+	width: 100%;
+	text-align: center;
+	padding: 10px 0;
+	top: 0;
+}
+div.footer {
+	background-image: url('images/footer.jpg');
+	background-position: 50% 0;
+	background-repeat: no-repeat;
+	margin: 0;
+	padding: 0;
+	height: 11px;
+}
+div.topLinks{
+	margin-left: auto;
+	margin-right: auto;
+	width: 100%;
+	padding: 0px;
+	color: black;
+	font-size: 120%;
+	text-align: center;
+}
+div.topLinks a{
+    padding: 5px;
+    margin: 5px;
+    border: solid 1px white;
+    text-decoration: none;
+    color: white;
+    height: 25px;
+}
+div.topLinks a:hover {
+    text-decoration: none;
+    background-color: white;
+    color: black;
+}
+div.bottom p, div.bottom a {
+    background-color: white;
+    color: #aaa;
+}
+div.bottom p{
+    padding: 10px;
+    border: solid 1px black;
+    text-align: center;
+}
+div.block {
+    border: solid 1px white;
+    padding: 10px;
+}
